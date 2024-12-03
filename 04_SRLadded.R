@@ -2,13 +2,12 @@
 library(ggplot2)
 library(dplyr)
 
-# Ensure the data contains columns for root length and belowground biomass
 # Replace `Root Length` with the actual column name for root length
 if ("Root Length" %in% colnames(plant_soil) && "belowground biomass" %in% colnames(plant_soil)) {
   
   # Calculate Specific Root Length (SRL)
   plant_soil <- plant_soil %>%
-    mutate(SRL = `Root Length` / `belowground biomass`)
+    mutate(SRL = (`Root Length`/100) / `belowground biomass`)
   
   # View the updated dataframe
   print(head(plant_soil))
@@ -17,4 +16,3 @@ if ("Root Length" %in% colnames(plant_soil) && "belowground biomass" %in% colnam
   print(summary(plant_soil$SRL))
   
 } 
-
