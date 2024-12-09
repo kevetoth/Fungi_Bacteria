@@ -16,3 +16,4 @@ if ("Root Length" %in% colnames(plant_soil) && "belowground biomass" %in% colnam
   print(summary(plant_soil$SRL))
   
 } 
+
