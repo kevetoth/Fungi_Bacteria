@@ -52,7 +52,7 @@ ggsave("Scree_Plot_Soil_Param.pdf", plot = scree_soil, width = 8, height = 6)
 
 
 
-# ggplot have to add % each pc is responsible for and ellipses 
+# ggplot have to add % each pc is responsible for and ellipses when pulling getting error fix error
 
 
 
@@ -87,7 +87,7 @@ pca_soil_scatter <- ggplot(pca_soildf, aes(x = PC1, y = PC2, color = Group)) +
 
 ggsave("PCA_Soil.pdf", plot = pca_soil_scatter, width = 8, height = 6)
 # Assuming `pca_result` is your PCA object
-loadings_plant <- pca_plant$rotation
+loadings_plant <- as.data.frame(pca_plant$rotation)
 
 # Extract the loadings for PC1, PC2, and PC3
 loadings_plantdf <- data.frame(
@@ -110,7 +110,7 @@ loadings_plantdf <- loadings_plantdf %>%
   select(Variables, PC1, PC2, PC3)
 
 # Assuming `pca_result` is your PCA object
-loadings_soil <- pca_soil$rotation
+loadings_soil <- as.data.frame(pca_soil$rotation)
 
 # Extract the loadings for PC1, PC2, and PC3
 loadings_soildf <- data.frame(
