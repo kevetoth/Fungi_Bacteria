@@ -86,49 +86,54 @@ pca_soil_scatter <- ggplot(pca_soildf, aes(x = PC1, y = PC2, color = Group)) +
 
 
 ggsave("PCA_Soil.pdf", plot = pca_soil_scatter, width = 8, height = 6)
-# Assuming `pca_result` is your PCA object
+
+
+# Extract the loadings for Plant_param PCA
 loadings_plant <- as.data.frame(pca_plant$rotation)
 
-# Extract the loadings for PC1, PC2, and PC3
+# Create a dataframe for the first three PCs
 loadings_plantdf <- data.frame(
-  Variables = rownames(loadings),
-  PC1 = loadings[, 1],
-  PC2 = loadings[, 2],
-  PC3 = loadings[, 3]
+  Variables = rownames(loadings_plant),
+  PC1 = loadings_plant[, 1],
+  PC2 = loadings_plant[, 2],
+  PC3 = loadings_plant[, 3]
 )
 
-# Add columns for absolute values
-loadings_plantdf <- loadings_df %>%
+# Add absolute values for sorting
+loadings_plantdf <- loadings_plantdf %>%
   mutate(Abs_PC1 = abs(PC1),
          Abs_PC2 = abs(PC2),
          Abs_PC3 = abs(PC3))
 
 # Sort by absolute values of PC1, PC2, or PC3
-# You can change "Abs_PC1" to "Abs_PC2" or "Abs_PC3" to sort by those components
-loadings_plantdf <- loadings_plantdf %>%
-  arrange(desc(Abs_PC1)) %>%
-  select(Variables, PC1, PC2, PC3)
+sorted_loadings_plant <- loadings_plantdf %>%
+  arrange(desc(Abs_PC1))  # Change to Abs_PC2 or Abs_PC3 for other PCs
 
-# Assuming `pca_result` is your PCA object
+# Print sorted loadings for Plant_param PCA
+print("Top contributing variables to PC1 (Plant_param):")
+print(sorted_loadings_plant)
+
+# Extract the loadings for Soil_param PCA
 loadings_soil <- as.data.frame(pca_soil$rotation)
 
-# Extract the loadings for PC1, PC2, and PC3
+# Create a dataframe for the first three PCs
 loadings_soildf <- data.frame(
-  Variables = rownames(loadings),
-  PC1 = loadings[, 1],
-  PC2 = loadings[, 2],
-  PC3 = loadings[, 3]
+  Variables = rownames(loadings_soil),
+  PC1 = loadings_soil[, 1],
+  PC2 = loadings_soil[, 2],
+  PC3 = loadings_soil[, 3]
 )
 
-# Add columns for absolute values
+# Add absolute values for sorting
 loadings_soildf <- loadings_soildf %>%
   mutate(Abs_PC1 = abs(PC1),
          Abs_PC2 = abs(PC2),
          Abs_PC3 = abs(PC3))
 
 # Sort by absolute values of PC1, PC2, or PC3
-# You can change "Abs_PC1" to "Abs_PC2" or "Abs_PC3" to sort by those components
-loadings_soildf <- loadings_soildf %>%
-  arrange(desc(Abs_PC1)) %>%
-  select(Variables, PC1, PC2, PC3)
+sorted_loadings_soil <- loadings_soildf %>%
+  arrange(desc(Abs_PC1))  # Change to Abs_PC2 or Abs_PC3 for other PCs
 
+# Print sorted loadings for Soil_param PCA
+print("Top contributing variables to PC1 (Soil_param):")
+print(sorted_loadings_soil)
