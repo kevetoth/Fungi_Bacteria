@@ -1,0 +1,46 @@
+---
+title: "DM-PROJECT-COMMON .Rmd"
+author: "Camille DELABAERE"
+date: "2024-12-01"
+output: html_document
+---
+
+############################################################### 
+
+#Camille Delabaere #01/12/24
+
+# 1/ Title : Cooperation between arbuscular mycorrhizal fungi #and plant growth-promoting bacteria and their #effects on plant growth and soil quality [<https://peerj.com/articles/13080/>]
+
+## 2/ Group members :
+
+Keve Toth ; Jakov Cancar ; Camille Delabaere
+
+### 3/ Introduction. Why your project is interesting? & What is known already about it? Most citations should be done in the introduction. We chose this scientific paper because we were interested in the knowledge we could gain about the relationship between microorganisms and plants. A way to understand how the Growth of plants & physico chemical prop of the soil is influenced by different treatments.
+
+What we know already : AMF - present to 70% of the terrestrial plants. Favorise exchange of nutrients/sugars thanks to arbuscules. Enhance resilience of plants for drought, heavy metals & pathogens. PGPR - include B (Bacillus spp…), contribute to the fixation of N, solubilisation of P, production of phytohormones & systemic resistance. AMF & PGPR provide ecological solutions to improve health soil & plants productivity.
+
+Citations ............................
+
+### 4/ Objectives and hypotheses
+
+The objectives are to analyse if arbuscular mycorrhizal fungi *AMF* & plant growth-promoting rhizobacteria *PGRB* have any synergy effects on nutrients uptakes or plant growth.
+
+The hypothese are 1) AMF and PGPR could mutually symbiose and enhance the plant growth of Elymus nutans Griseb, & (2) the co-existence of AMF and PGPR could improve plant traits and soil quality better than their individual applications.
+
+........................................
+
+5.  Methods. Explain the origin and structure of your data. What have you done? And what did you use to do it? Step by step, so anyone could do it again by reading this part.
+
+6.  Results. Figures and tables with captions and description of what do they mean. Never include citations in this part. This is only your work.
+
+7.  Discussion. From your objectives.
+
+8.  Conclusions.
+
+.........................................
+
+
+
+
+
+
