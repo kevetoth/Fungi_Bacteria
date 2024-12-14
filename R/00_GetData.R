@@ -7,7 +7,7 @@ library(ggplot2)
 library(dplyr)
 library(readxl)
 
-download.file("https://dfzljdn9uc3pi.cloudfront.net/2022/13080/1/data.xlsx", "Plant_soil.xlsx", mode = "wb")
+# download.file("https://dfzljdn9uc3pi.cloudfront.net/2022/13080/1/data.xlsx", "Plant_soil.xlsx", mode = "wb")
 
 plant_soil <- read_excel("Plant_soil.xlsx")
 colnames(plant_soil)[1] <- "Group"
