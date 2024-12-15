@@ -1,16 +1,23 @@
 ---
 title: "Preliminary_results.Rmd"
-author: "Camille DELABAERE"
+authors Group A : "Keve Toth ; Jakov Cancar ; Camille Delabaere"
 date: "2024-12-01"
 output: 
   html_document
+  css: styles.css
 ---
 
-### 1/ Title : Preliminary_results of [Cooperation between arbuscular mycorrhizal fungi and plant growth-promoting bacteria and their effects on plant growth and soil quality](https://peerj.com/articles/13080/)
+## Title : Preliminary_results of [Cooperation between arbuscular mycorrhizal fungi and plant growth-promoting bacteria and their effects on plant growth and soil quality](https://peerj.com/articles/13080/)
 
-### 2/ Group members : Keve Toth ; Jakov Cancar ; Camille Delabaere
+## Preamble :
 
-### 3/ Introduction. Why your project is interesting? & What is known already about it?
+This is the final project for the subject "Data Acquisition Analysis and Scientific Methods for Life Sciences" shorted as "Data" from the first course of the Master Plant Health at the Universitat Politècnica de València.
+
+## <u>Guidelines</u> :
+
+In this project the students chose a scientific article and redo all possible statistic analyses and graphics from it, trying different approaches to see if they can improve them. They will use the data included in the article and follow the Material and methods chapter as a guide.
+
+### Introduction. Why your project is interesting? & What is known already about it?
 
 We chose this scientific paper because we were interested in the knowledge we could gain about the relationship between plants & microorganisms *(here arbuscular mycorrhizal fungi (AMF) & plant growth-promoting bacteria (PGPB))*. A way to understand how the growth of plants & physico chemical properties of the soil are influenced by different treatments. Finaly, as "Almost 25% of the Earth’s biodiversity is composed of soil microorganisms (...)" (Fierer, 2017; Wagg et al., 2019; Whitman, Coleman & Wiebe, 1998), we thought we would acquire knowledge that we can later on, apply during our career.
 
@@ -26,34 +33,70 @@ The <u>objectives</u> are to analyse if arbuscular mycorrhizal fungi\* AMF\* & p
 
 The <u>hypotheses</u> are 1) AMF and PGPR could mutually symbiose and enhance the plant growth of Elymus nutans Griseb, & (2) the co-existence of AMF and PGPR could improve plant traits and soil quality better than their individual applications.
 
-........................................
-
 ### 5. Methods.
 
 ### 5.a Origin & structure of the data.
 
 It comes from the scientific article [Cooperation between arbuscular mycorrhizal fungi and plant growth-promoting bacteria and their effects on plant growth and soil quality](https://peerj.com/articles/13080/) by Yu L, Zhang H, Zhang W, Liu K, Liu M, Shao X. 2022.
 
-As we wanted to make the data more readable, it was sorted by plant_param and soil_param.
+As we wanted to make the data more readable and usable by R code, it was sorted & reorganized in 00_GetData.R.
 
-Loading of Data
-```{r}
-Data_Soil_param <- read.csv(file.choose())
-Data_Plant_param <- read.csv(file.choose())
-```
+Finding Path of a File in R (RStudio)
 
-Displays tables in the document
+file.choose("00_GetData.R")
+
 ```{r}
-knitr::kable(Data_Soil_param, format = "html") 
-knitr::kable(Data_Plant_param, format = "html")
+# Source an external R script
+source ("~/Desktop/Fungi_Bacteria/R/00_GetData.R")
 ```
 
 ### 5.b What have you done? And what did you use to do it? Step by step, so anyone could do it again by reading this part.
 
+Correlation analyses, ANOVA analyse, and some multivariate analyses were realized :
+
+-   <u>ANOVA</u> (Analysis of Variance)
+
+ANOVA (Analysis of Variance) is used to compare the means of multiple variances to determine if there are statistically significant differences between them. Here to compare the effects of AMF or PGPB treatment only, or combination of both treatments or noneof them on soil content and plant growth. Also a way to analyze the impact of independent variables on a dependent variable & to test interactions between factors. Finaly done in order to reliably and efficiently compare the means of multiple groups while controlling for statistical errors.
+
+To get boxplots showcasing the Analysis of Variance (ANOVA) analysis of all variables :
+
+Finding Path of a File in R (RStudio) file.choose("02_ANOVAs.R")
+
+Display PDF as Image with Width Adjustments
+
+```{r}
+source("~/Desktop/Fungi_Bacteria/R/02_ANOVAs.R")
+
+knitr::include_graphics("~/Desktop/Fungi_Bacteria/R/02_ANOVAs.R")
+```
+
+To display the .pdf :
+
+<embed src="~/Desktop/Fungi_Bacteria/ANOVA_Boxplots.pdf" width="800" height="600" type="application/pdf">
+
+-   <u>PCA</u> (Principal Component Analysis)
+
+PCA is a statistical technique used for dimensional reduction and data simplification. Transforming high-dimensional data into a smaller number of uncorrelated variables called *principal components*. These components capture the most important features of the original data.
+
+**NB**: By keeping only the most important components, PCA simplifies the data without losing much information, which is particularly useful for tasks like pattern recognition, data visualization, and improving the performance of machine learning models.
+
+-   <u>LDA</u> (Linear Discriminant Analysis) It works by finding a linear combination of features that best separates multiple classes.
+
+**NB**: Unlike PCA (*unsupervising and focusing on maximizing variance*) LDA aims to maximize the separation between different classes.
+
+We plan to start with each variable analyses separately then ANOVA analyses we'll combine these small results analyses with the knowledge acquire from the article chosen to define the larger scale multivariate analyses. These might be a relationship between soil nutrients/quality and plant size measurements (multiple roots measurements and above ground biomass).
+
 ### 6. Results. Figures and tables with captions and description of what do they mean. Never include citations in this part. This is only your work.
+
+
+# KEVE COUCOU
 
 ### 7. Discussion. From your objectives.
 
-8.  Conclusions.
+Better results on plant-roots growth for synergy effects of AMF & PGPB.
+
+### 8. Conclusions.
+
+Overall, knowledgeable work, but laborious !
 
 .........................................
