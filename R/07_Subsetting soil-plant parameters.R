@@ -12,6 +12,4 @@ Soil_param <- plant_soil[, c("Group", "NH4+-N", "NO3-N", "Total_N", "Total_C",
 head(Plant_param)
 head(Soil_param)
 
-# Save the subsets to new dataframes if needed
-write.csv(Plant_param, "Plant_param.csv", row.names = FALSE)
-write.csv(Soil_param, "Soil_param.csv", row.names = FALSE)
+
