@@ -45,7 +45,7 @@ pca_scatter <- ggplot(pca_df, aes(x = PC1, y = PC2, color = Group)) +
   geom_point(size = 3, alpha = 0.8) +  # Scatter points
   geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +  # Horizontal line at 0
   geom_vline(xintercept = 0, linetype = "dashed", color = "gray") +  # Vertical line at 0
-  labs(title = "PCA Plot with Group Coloring", 
+  labs(title = "PCA Plot", 
        x = "Principal Component 1", 
        y = "Principal Component 2") +
   theme_minimal() +
@@ -57,3 +57,4 @@ print(pca_scatter)
 
 # Save PCA scatterplot
 ggsave("PCA_Scatter_Plot.pdf", plot = pca_scatter, width = 8, height = 6)
+
