@@ -8,8 +8,4 @@ Plant_param <- plant_soil[, c("Group", "Aboveground_Biomass", "Belowground_Bioma
 Soil_param <- plant_soil[, c("Group", "NH4+-N", "NO3-N", "Total_N", "Total_C", 
                              "Available_P", "Total_P", "ALP", "UE", "EC", "PH")]
 
-# View the subsets (optional)
-head(Plant_param)
-head(Soil_param)
-
 

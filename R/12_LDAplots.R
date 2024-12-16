@@ -1,68 +1,19 @@
-# Load necessary library
-library(MASS)
+# Perform LDA for Plant Parameters
+plant_lda_results <- perform_lda(Plant_param, "Group", threshold = 0.1, plot_title_prefix = "Plant Parameters")
+ggsave("Plant_LDA_Plot.pdf", plot = plant_lda_results$lda_plot, width = 8, height = 6)
+ggsave("Plant_LDA_Arrows.pdf", plot = plant_lda_results$arrow_plot, width = 8, height = 6)
 
-# Ensure 'Group' is a factor
-Plant_param$Group <- as.factor(Plant_param$Group)
+# Perform LDA for Soil Parameters
+soil_lda_results <- perform_lda(Soil_param, "Group", threshold = 0.1, plot_title_prefix = "Soil Parameters")
+ggsave("Soil_LDA_Plot.pdf", plot = soil_lda_results$lda_plot, width = 8, height = 6)
+ggsave("Soil_LDA_Arrows.pdf", plot = soil_lda_results$arrow_plot, width = 8, height = 6)
 
-# Perform LDA
-plant_lda <- lda(Group ~ ., data = Plant_param)
+# Evaluate Performance for Plant Parameters
+plant_confusion <- table(Actual = Plant_param$Group, Predicted = plant_lda_results$predictions$class)
+plant_accuracy <- sum(diag(plant_confusion)) / sum(plant_confusion)
+cat("Plant LDA Accuracy:", plant_accuracy, "\n")
 
-# View LDA results
-print(plant_lda)
-
-# Predict group memberships and extract scores
-plant_predictions <- predict(plant_lda)
-
-# Add LDA scores to the original data for plotting
-Plant_param$LD1 <- plant_predictions$x[, 1]
-Plant_param$LD2 <- plant_predictions$x[, 2]
-
-# Plot LDA results
-library(ggplot2)
-plant_param_lda <- ggplot(Plant_param, aes(x = LD1, y = LD2, color = Group, fill = Group)) +
-  geom_point(size = 3) +
-  stat_ellipse(geom = "polygon", alpha = 0.3) + # Ellipses with transparent fill
-  labs(title = "LDA Plot for Plant Parameters", x = "LD1", y = "LD2") +
-  theme_minimal() +
-  theme(legend.title = element_blank())
-
-ggsave("Plant_LDA_Plot.pdf", plot = plant_param_lda, width = 8, height = 6)
-
-
-# Ensure 'Group' is a factor
-Soil_param$Group <- as.factor(Soil_param$Group)
-
-# Perform LDA
-soil_lda <- lda(Group ~ ., data = Soil_param)
-
-# View LDA results
-print(soil_lda)
-
-# Predict group memberships and extract scores
-soil_predictions <- predict(soil_lda)
-
-# Add LDA scores to the original data for plotting
-Soil_param$LD1 <- soil_predictions$x[, 1]
-Soil_param$LD2 <- soil_predictions$x[, 2]
-
-# Plot LDA results
-soil_param_lda <- ggplot(Soil_param, aes(x = LD1, y = LD2, color = Group, fill = Group)) +
-  geom_point(size = 3) +
-  stat_ellipse(geom = "polygon", alpha = 0.3) + # Ellipses with transparent fill
-  labs(title = "LDA Plot for Soil Parameters", x = "LD1", y = "LD2") +
-  theme_minimal() +
-  theme(legend.title = element_blank())
-
-ggsave("Soil_LDA_Plot.pdf", plot = soil_param_lda, width = 8, height = 6)
-
-# Inspect coefficients (scaling) for each LD
-plant_lda_scaling <- plant_lda$scaling
-
-# View the coefficients for LD1 and LD2
-print(plant_lda_scaling)
-
-# Inspect coefficients (scaling) for each LD
-soil_lda_scaling <- soil_lda$scaling
-
-# View the coefficients for LD1 and LD2
-print(soil_lda_scaling)
+# Evaluate Performance for Soil Parameters
+soil_confusion <- table(Actual = Soil_param$Group, Predicted = soil_lda_results$predictions$class)
+soil_accuracy <- sum(diag(soil_confusion)) / sum(soil_confusion)
+cat("Soil LDA Accuracy:", soil_accuracy, "\n")

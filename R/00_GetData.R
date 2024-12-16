@@ -2,6 +2,7 @@
 if (!require(readxl)) install.packages("readxl")
 if (!require(ggplot2)) install.packages("ggplot2")
 if (!require(factoextra)) install.packages("factoextra")
+if (!require(caret)) install.packages("caret")
 
 library(ggplot2)
 library(dplyr)
