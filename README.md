@@ -31,16 +31,24 @@ You have a nice article to follow but data are a bit scarce. The dataframe have 
 ## Protocol
 
 All the finalized results and graphs will be showcased in Preliminary_results.Rmd, so this is the only file that needs to be run. However the correct protocol to run the R codes is as follows. 
+The codes not mentioned in this protocol are irrelevant and should not be opened or run. 
 
 1. To set up the workspace run R file 00_GetData.
 2. To get boxplots showcasing the Analyisis of Variance (ANOVA) analyisis of all variables run 02_ANOVAs
-3. To get Bonferroni corrected ANOVA p values in a table run 09_ANOVAptable
-4. To get boxplots showcasing where there was a significant variation between treatment with only Arbuscular mycorrhizal fungi, and both AM fungi and Rhizobial Bacteria run 03_ANOVAfungi
-5. We will not use this in our final results but to get a Principal component analyisis shown on Scree plots, as well as a scatter plot for all variables run 06_PCAimproved
-6. In the further analyisis we conducted we have separated variables measuring soil and plant parameters for more accuracy, to set up for this run 07_Subsetting soil-plant parameters
-7. To get Scree plots, Arrow plots showcasing how each variable influenced PC1 and PC2, and a Principle Component Analysis (PCA) scatter plot for both soil and plant parameters run 08_PCAsubsetted
-8. To get a scatter plot that compares principle component 1 (PC1) of plant parameters and PC1 of soil parameters run 11_PCAcombo
-9. To get a scatter plot showcasing the results for our Linear Discriminant Analyis (LDA) of soil parameters and plant parameters separately run 12_LDAplots
-10. To see which variables influenced LDA the most shown by vectors run 13_LDAarrows
-11. To get a correlogram showcasing the correlation between plant characteristics and soil characteristics run 10_Correlogram
-12. To get correlograms showing Specific Root Lengths (SRL) correlation with plant characteristics, and separately SRL correlation with soil parameters run 14_SRLcorrelogram
+3. To get all the significant ANOVAs in one document run 18_ANOVAmix
+4. To get Bonferroni corrected ANOVA p values in a table run 09_ANOVAptable
+5. To get boxplots showcasing where there was a significant variation between treatment with only Arbuscular mycorrhizal fungi, and both AM fungi and Rhizobial Bacteria run 03_ANOVAfungi
+6. We will not use this in our final results but to get a Principal component analyisis shown on Scree plots, as well as a scatter plot for all variables run 06_PCAimproved
+7. In the further analyisis we conducted we have separated variables measuring soil and plant parameters for more accuracy, to set up for this run 07_Subsetting soil-plant parameters
+8. To get Scree plots, Arrow plots showcasing how each variable influenced PC1 and PC2, and a Principle Component Analysis (PCA) scatter plot for both soil and plant parameters run 08_PCAsubsetted
+9. To get a scatter plot that compares principle component 1 (PC1) of plant parameters and PC1 of soil parameters run 11_PCAcombo
+10. To set up for performing Linear Discriminant Analysis (LDA) for the subset of plant parameters and soil parameters run 15_LDAfunction
+11. To get scatterplot showcasing LDA and arrow plot for all the variables measured run 19_BigLDA
+12. To get a scatterplot showcasing LDA for both and also an arrow plot that shows the strength of each variables contribution to LD1 and LD2 run 12_LDAplots
+13. To get a correlogram showcasing the correlation between plant characteristics and soil characteristics run 10_Correlogram
+14. To get correlograms showing Specific Root Lengths (SRL) correlation with plant characteristics, and separately SRL correlation with soil parameters run 14_SRLcorrelogram
+15. We wanted to showcase some important traits that we thougth might be correlated, and we know that these variables have significant variation based on the ANOVA analyisis to 
+	get the plots for these correlations run 16_InterestingCorrelations
+16. We also found one correlation that might better be explained by a nonlinear correlation this is the correaltion between Urease in soil (UE) and Plant phosphorus
+	to get a graph for this correlation run 17_UEvsPlantprelation
+	
