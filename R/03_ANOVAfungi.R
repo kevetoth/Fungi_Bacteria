@@ -16,7 +16,7 @@ filtered_data$Group <- factor(filtered_data$Group, levels = c("A2", "AB5"))
 response_vars <- colnames(filtered_data)[2:ncol(filtered_data)]  # Adjust as needed
 
 # Specify the PDF file name
-pdf("Significant_ANOVA_Boxplots.pdf")
+pdf("Significant_ANOVA_Fungivsbacteria.pdf")
 
 # Iterate over each response variable to perform ANOVA and plot
 for (var in response_vars) {
@@ -49,5 +49,5 @@ for (var in response_vars) {
 # Close the PDF device
 dev.off()
 
-print("Plots saved to Significant_ANOVA_Boxplots.pdf")
+print("Plots saved to Significant_ANOVA_fungivsbacteria.pdf")
 
