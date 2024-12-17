@@ -37,16 +37,16 @@ plant_soil$Group <- as.factor(plant_soil$Group)
 # Replace `Root Length` with the actual column name for root length
 if ("RootLength" %in% colnames(plant_soil) && "Belowground_Biomass" %in% colnames(plant_soil)) {
   
-  # Calculate Specific Root Length (SRL)
+# Calculate Specific Root Length (SRL)
   plant_soil <- plant_soil %>%
     mutate(SRL = (`RootLength`/100) / `Belowground_Biomass`)
   
-  # View the updated dataframe
+# View the updated dataframe
   print(head(plant_soil))
   
-  # Summary of SRL
+# Summary of SRL
   print(summary(plant_soil$SRL))
   
 } 
-
+  print(plant_soil)
 
