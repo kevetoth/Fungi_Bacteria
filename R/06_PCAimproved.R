@@ -40,16 +40,20 @@ ggsave("PCA_Scree_Plot.pdf", plot = scree_plot, width = 8, height = 6)
 pca_df <- as.data.frame(pca_result$x)  # Extract PCA scores
 pca_df$Group <- plant_soil$Group  # Add group information from the 'Group' column
 
-# Scatterplot of first two principal components with zero lines and group coloring
+# Scatterplot of first two principal components with ellipses
 pca_scatter <- ggplot(pca_df, aes(x = PC1, y = PC2, color = Group)) +
   geom_point(size = 3, alpha = 0.8) +  # Scatter points
   geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +  # Horizontal line at 0
   geom_vline(xintercept = 0, linetype = "dashed", color = "gray") +  # Vertical line at 0
+  stat_ellipse(type = "norm", level = 0.95, aes(fill = Group), alpha = 0.2, show.legend = FALSE) + # Add ellipses
   labs(title = "PCA Plot", 
        x = "Principal Component 1", 
        y = "Principal Component 2") +
   theme_minimal() +
   theme(legend.position = "right")  # Adjust legend position
+
+# Print the plot
+print(pca_scatter)
 
 # Print the plots
 print(scree_plot)
