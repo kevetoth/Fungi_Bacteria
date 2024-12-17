@@ -7,6 +7,8 @@ if (!require(caret)) install.packages("caret")
 library(ggplot2)
 library(dplyr)
 library(readxl)
+library(caret)
+library(MASS)
 
 # download.file("https://dfzljdn9uc3pi.cloudfront.net/2022/13080/1/data.xlsx", "Plant_soil.xlsx", mode = "wb")
 
