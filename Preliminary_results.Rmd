@@ -38,19 +38,7 @@ The <u>hypotheses</u> are 1) AMF and PGPR could mutually symbiose and enhance th
 
 It comes from the scientific article [Cooperation between arbuscular mycorrhizal fungi and plant growth-promoting bacteria and their effects on plant growth and soil quality](https://peerj.com/articles/13080/) by Yu L, Zhang H, Zhang W, Liu K, Liu M, Shao X. 2022.
 
-As we wanted to make the data more readable and usable by R code, it was sorted & reorganized in 00_GetData.R.
-
-# Source an external R script
-
-```{r}
-source ("~/Desktop/Fungi_Bacteria/R/07_Subsetting soil-plant parameters.R")
-Pllibrary(knitr)
-kable(Plant_param)
-
-Plant_param <- as.data.frame(Plant_param)
-  
-print(Plant_param)
-```
+DATA DISPLAYS 
 
 ### 5.b What have you done? And what did you use to do it? Step by step, so anyone could do it again by reading this part.
 
@@ -58,7 +46,7 @@ Correlation analyses, ANOVA analyse, and some multivariate analyses were realize
 
 -   <u>ANOVA</u> (Analysis of Variance)
 
-ANOVA (Analysis of Variance) is used to compare the means of multiple variances to determine if there are statistically significant differences between them. Here to compare the effects of AMF or PGPB treatment only, or combination of both treatments or noneof them on soil content and plant growth. Also a way to analyze the impact of independent variables on a dependent variable & to test interactions between factors. Finaly done in order to reliably and efficiently compare the means of multiple groups while controlling for statistical errors.
+ANOVA (Analysis of Variance) is used to compare the means of multiple variances to determine if there are statistically significant differences between them. Here to compare the effects of AMF or PGPB treatment only, or combination of both treatments or none of them on soil content and plant growth. Also a way to analyze the impact of independent variables on a dependent variable & to test interactions between factors. Finaly done in order to reliably and efficiently compare the means of multiple groups while controlling for statistical errors.
 
 To get boxplots showcasing the Analysis of Variance (ANOVA) analysis of all variables :
 
@@ -89,6 +77,969 @@ PCA is a statistical technique used for dimensional reduction and data simplific
 We plan to start with each variable analyses separately then ANOVA analyses we'll combine these small results analyses with the knowledge acquire from the article chosen to define the larger scale multivariate analyses. These might be a relationship between soil nutrients/quality and plant size measurements (multiple roots measurements and above ground biomass).
 
 ### 6. Results. Figures and tables with captions and description of what do they mean. Never include citations in this part. This is only your work.
+
+
+J.Get 09_ANOVAptable.R  Corrected P values of ANOVA analysis of each variable
+```{r}
+# Filter numeric variables for ANOVA
+response_vars <- colnames(plant_soil)[sapply(plant_soil, is.numeric) & colnames(plant_soil) != "Group"]
+
+# Initialize a dataframe to store ANOVA results
+anova_results <- data.frame(Variable = character(), P_Value = numeric(), stringsAsFactors = FALSE)
+
+# Perform ANOVA for each numeric variable
+for (var in response_vars) {
+  formula <- as.formula(paste("`", var, "` ~ Group", sep = ""))
+  anova_result <- aov(formula, data = plant_soil)
+  anova_summary <- summary(anova_result)
+  
+  # Extract p-value
+  p_value <- anova_summary[[1]]$`Pr(>F)`[1]
+  anova_results <- rbind(anova_results, data.frame(Variable = var, P_Value = p_value))
+}
+
+# Apply Bonferroni correction
+anova_results$Bonferroni_P <- p.adjust(anova_results$P_Value, method = "bonferroni")
+
+# Save ANOVA results to a CSV file
+write.csv(anova_results, "ANOVA_Results.csv", row.names = FALSE)
+
+# Display the results
+print("ANOVA Results with Bonferroni Correction:")
+print(anova_results)
+
+```
+
+...
+Showcasing all significant ANOVA analyses in boxplots
+```{r}
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+
+# Assume `plant_soil` is your dataframe
+# Rename the grouping column for convenience (if not already done)
+colnames(plant_soil)[1] <- "Group"
+
+# Reorder the factor levels of the "Group" column
+desired_order <- c("CK1", "B3", "A2", "AB5")
+plant_soil$Group <- factor(plant_soil$Group, levels = desired_order)
+
+# Specify the PDF file name
+pdf("ANOVA_Boxplots.pdf")
+
+# Get the names of all response variables (excluding the grouping column)
+response_vars <- colnames(plant_soil)[2:ncol(plant_soil)]  # Adjust as needed
+
+# Iterate over each response variable to perform ANOVA and plot
+for (var in response_vars) {
+  # Perform ANOVA
+  formula <- as.formula(paste("`", var, "` ~ Group", sep = ""))
+  anova_result <- aov(formula, data = plant_soil)
+  anova_summary <- summary(anova_result)
+  
+  # Extract p-value
+  p_value <- anova_summary[[1]]$`Pr(>F)`[1]
+  
+  # Visualization using ggplot2
+  p <- ggplot(plant_soil, aes_string(x = "Group", y = paste0("`", var, "`"), fill = "Group")) +
+    geom_boxplot() +
+    theme_minimal() +
+    labs(title = paste("Boxplot of", var, "Across Groups"),
+         x = "Group",
+         y = var) +
+    annotate("text", x = 1.5, y = max(plant_soil[[var]], na.rm = TRUE), 
+             label = paste("p =", signif(p_value, digits = 3)), 
+             hjust = 0, vjust = -0.5, size = 5, color = "red")
+  
+  # Print the plot (this writes it to the PDF)
+  print(p)
+}
+
+# Close the PDF device
+dev.off()
+
+print("Plots saved to ANOVA_Boxplots.pdf")
+```
+OR
+R.Get 18_ANOVAmix.R
+```{r}
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+library(gridExtra)
+
+# Assume `plant_soil` is your dataframe
+# Rename the grouping column for convenience (if not already done)
+colnames(plant_soil)[1] <- "Group"
+
+# Reorder the factor levels of the "Group" column
+desired_order <- c("CK1", "B3", "A2", "AB5")
+plant_soil$Group <- factor(plant_soil$Group, levels = desired_order)
+
+# Specify the PDF file name
+pdf("Significant_ANOVA_mix.pdf", height = 12, width = 12)  # Adjust size to fit grid
+
+# Get the names of all response variables (excluding the grouping column)
+response_vars <- colnames(plant_soil)[2:ncol(plant_soil)]  # Adjust as needed
+
+# Initialize an empty list to store plots
+plot_list <- list()
+
+# Iterate over each response variable to perform ANOVA and plot
+for (var in response_vars) {
+  # Perform ANOVA
+  formula <- as.formula(paste("`", var, "` ~ Group", sep = ""))
+  anova_result <- aov(formula, data = plant_soil)
+  anova_summary <- summary(anova_result)
+  
+  # Extract p-value
+  p_value <- anova_summary[[1]]$`Pr(>F)`[1]
+  
+  # Only generate plots for significant results
+  if (p_value < 0.05) {
+    # Visualization using ggplot2
+    p <- ggplot(plant_soil, aes_string(x = "Group", y = paste0("`", var, "`"), fill = "Group")) +
+      geom_boxplot() +
+      theme_minimal() +
+      labs(title = paste("Boxplot of", var, "Across Groups"),
+           x = "Group",
+           y = var) +
+      # Dynamically set the y-position for the p-value annotation
+      annotate("text", x = 1.5, y = min(plant_soil[[var]], na.rm = TRUE) - 0.5, 
+               label = paste("p =", signif(p_value, digits = 3)), 
+               hjust = 0, vjust = 1, size = 3, color = "red") +  # Moved p-value lower
+      theme(plot.title = element_text(size = 7),  # Smaller title size
+            axis.title = element_text(size = 7),   # Axis title size (optional)
+            axis.text = element_text(size = 5))    # Axis labels size (optional)
+    
+    # Append the plot to the plot list
+    plot_list <- c(plot_list, list(p))
+  }
+}
+
+# Combine all the plots into a 4x4 grid (adjust the number of rows/columns as necessary)
+if (length(plot_list) > 0) {
+  do.call(grid.arrange, c(plot_list, ncol = 4))  # Adjust ncol for layout
+}
+
+# Close the PDF device
+dev.off()
+
+print("Significant_ANOVA_mix.pdf")
+
+```
+...
+
+Showcasing all ANOVA analysis with significant difference between AMF treatment and AMF + PGPB treatments
+```{r}
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+
+# Assume `plant_soil` is your dataframe
+# Rename the grouping column for convenience (if not already done)
+colnames(plant_soil)[1] <- "Group"
+
+# Reorder the factor levels of the "Group" column
+desired_order <- c("CK1", "B3", "A2", "AB5")
+plant_soil$Group <- factor(plant_soil$Group, levels = desired_order)
+
+# Specify the PDF file name
+pdf("ANOVA_Boxplots.pdf")
+
+# Get the names of all response variables (excluding the grouping column)
+response_vars <- colnames(plant_soil)[2:ncol(plant_soil)]  # Adjust as needed
+
+# Iterate over each response variable to perform ANOVA and plot
+for (var in response_vars) {
+  # Perform ANOVA
+  formula <- as.formula(paste("`", var, "` ~ Group", sep = ""))
+  anova_result <- aov(formula, data = plant_soil)
+  anova_summary <- summary(anova_result)
+  
+  # Extract p-value
+  p_value <- anova_summary[[1]]$`Pr(>F)`[1]
+  
+  # Visualization using ggplot2
+  p <- ggplot(plant_soil, aes_string(x = "Group", y = paste0("`", var, "`"), fill = "Group")) +
+    geom_boxplot() +
+    theme_minimal() +
+    labs(title = paste("Boxplot of", var, "Across Groups"),
+         x = "Group",
+         y = var) +
+    annotate("text", x = 1.5, y = max(plant_soil[[var]], na.rm = TRUE), 
+             label = paste("p =", signif(p_value, digits = 3)), 
+             hjust = 0, vjust = -0.5, size = 5, color = "red")
+  
+  # Print the plot (this writes it to the PDF)
+  print(p)
+}
+
+# Close the PDF device
+dev.off()
+
+print("Plots saved to ANOVA_Boxplots.pdf")
+```
+
+
+SHOULD BE RUN FOR THE 8 H. Get 07_Subsetting soil-plant parameters.R
+```{r}
+# Subset 1: Plant parameters (including 'Group' as the treatment column)
+Plant_param <- plant_soil[,c("Group","Aboveground_Biomass","Belowground_Biomass"
+                             ,"Total_Biomass","RootLength", "RootSurfaceArea",
+                             "RootAverageDiameter", "Rvolume","Rootbranches",
+                             "SIZE","R/S_ratio", "HEIGHT","Plant_P", "Plant_N", 
+                             "Plant_C", "SRL")]
+
+print(Plant_param)
+
+# Subset 2: Soil parameters (including 'Group' as the treatment column)
+Soil_param <- plant_soil[, c("Group", "NH4+-N", "NO3-N", "Total_N", "Total_C", 
+                             "Available_P", "Total_P", "ALP", "UE", "EC", "PH")]
+print(Soil_param)
+
+
+```
+
+Principle Component Analysis (PCA) of plants measured variables and soil measurable separately
+```{r}
+# Load necessary libraries
+if (!require(ggplot2)) install.packages("ggplot2")
+if (!require(factoextra)) install.packages("factoextra")
+
+library(ggplot2)
+library(factoextra)
+
+# Normalize function: divide each column by its standard deviation
+normalize <- function(df) {
+  numeric_cols <- sapply(df, is.numeric)  # Identify numeric columns
+  df[, numeric_cols] <- scale(df[, numeric_cols], center = FALSE, scale = TRUE)  # Divide by SD
+  return(df)
+}
+
+# Normalize subsets (excluding 'Group' column)
+Plant_param_normalized <- normalize(Plant_param[ , -1])  # Exclude 'Group' for normalization
+Soil_param_normalized <- normalize(Soil_param[ , -1])    # Exclude 'Group' for normalization
+
+# Add the 'Group' column back
+Plant_param_normalized$Group <- Plant_param$Group
+Soil_param_normalized$Group <- Soil_param$Group
+
+# Perform PCA for Plant_param
+pca_plant <- prcomp(Plant_param_normalized[ , -ncol(Plant_param_normalized)], center = TRUE, scale. = FALSE)
+
+# Perform PCA for Soil_param
+pca_soil <- prcomp(Soil_param_normalized[ , -ncol(Soil_param_normalized)], center = TRUE, scale. = FALSE)
+
+# Scree plot for Plant_param
+scree_plant <- fviz_eig(pca_plant, addlabels = TRUE, 
+                        main = "Scree Plot for Plant Parameters", 
+                        xlab = "Principal Components", 
+                        ylab = "Variance Explained (%)")
+print(scree_plant)
+# Scree plot for Soil_param
+scree_soil <- fviz_eig(pca_soil, addlabels = TRUE, 
+                       main = "Scree Plot for Soil Parameters", 
+                       xlab = "Principal Components", 
+                       ylab = "Variance Explained (%)")
+print(scree_soil)
+# Save scree plots to PDF
+ggsave("Scree_Plot_Plant_Param.pdf", plot = scree_plant, width = 8, height = 6)
+ggsave("Scree_Plot_Soil_Param.pdf", plot = scree_soil, width = 8, height = 6)
+
+
+
+
+
+# ggplot have to add % each pc is responsible for and ellipses when pulling getting error fix error
+
+
+pca_plantdf <- as.data.frame(pca_plant$x)  # Extract PCA scores
+pca_plantdf$Group <- plant_soil$Group
+
+# Calculate variance explained by PC1 and PC2
+explained_variance <- summary(pca_plant)$importance[2, 1:2] * 100  # Extract variance percentages
+pc1_label <- paste0("Principal Component 1 (", round(explained_variance[1], 2), "%)")
+pc2_label <- paste0("Principal Component 2 (", round(explained_variance[2], 2), "%)")
+
+# PCA Plot with Smaller Ellipses
+pca_plant_scatter <- ggplot(pca_plantdf, aes(x = PC1, y = PC2, color = Group)) +
+  geom_point(size = 3, alpha = 0.8) +  # Scatter points
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +  # Horizontal line at 0
+  geom_vline(xintercept = 0, linetype = "dashed", color = "gray") +  # Vertical line at 0
+  stat_ellipse(type = "norm", geom = "polygon", alpha = 0.2, aes(fill = Group), 
+               level = 0.8, show.legend = FALSE) +  # Adjusted ellipses with smaller confidence level
+  labs(title = "PCA of Plant Parameters with Treatment Groups", 
+       x = pc1_label, 
+       y = pc2_label) +
+  theme_minimal() +
+  theme(legend.position = "right")
+
+# Save PCA Plant plot with smaller ellipses
+ggsave("PCA_Plant.pdf", plot = pca_plant_scatter, width = 8, height = 6)
+
+
+# Calculate percentage contribution for PC1 and PC2
+explained_variance <- summary(pca_plant)$importance[2, ] * 100
+pc1_label <- paste0("Principal Component 1 (", round(explained_variance[1], 2), "%)")
+pc2_label <- paste0("Principal Component 2 (", round(explained_variance[2], 2), "%)")
+
+# Prepare PCA DataFrame for plant_soil
+pca_soildf <- as.data.frame(pca_soil$x)  # Extract PCA scores
+pca_soildf$Group <- plant_soil$Group
+
+# PCA Plot with Smaller Ellipses for plant_soil
+pca_soil_scatter <- ggplot(pca_soildf, aes(x = PC1, y = PC2, color = Group)) +
+  geom_point(size = 3, alpha = 0.8) +  # Scatter points
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +  # Horizontal line at 0
+  geom_vline(xintercept = 0, linetype = "dashed", color = "gray") +  # Vertical line at 0
+  stat_ellipse(type = "norm", geom = "polygon", alpha = 0.2, aes(fill = Group), 
+               level = 0.8, show.legend = FALSE) +  # Adjusted ellipses with smaller confidence level
+  labs(title = "PCA of Soil Parameters with Treatment Groups", 
+       x = pc1_label, 
+       y = pc2_label) +
+  theme_minimal() +
+  theme(legend.position = "right")
+
+# Save PCA Soil plot with smaller ellipses
+ggsave("PCA_Soil.pdf", plot = pca_soil_scatter, width = 8, height = 6)
+
+
+
+# Loadings for PCA of Plant_param
+loadings_plant <- as.data.frame(pca_plant$rotation)
+
+# Calculate percentage contribution for PC1 and PC2
+explained_variance_plant <- summary(pca_plant)$importance[2, ] * 100
+pc1_label_plant <- paste0("Principal Component 1 (", round(explained_variance_plant[1], 2), "%)")
+pc2_label_plant <- paste0("Principal Component 2 (", round(explained_variance_plant[2], 2), "%)")
+
+# Create a dataframe for arrows
+arrows_plant <- data.frame(
+  x = 0,  # Origin x
+  y = 0,  # Origin y
+  xend = loadings_plant[, 1],  # PC1 Loadings
+  yend = loadings_plant[, 2],  # PC2 Loadings
+  Variables = rownames(loadings_plant)  # Variable names
+)
+
+# PCA plot with arrows for Plant_param
+pca_plant_arrows <- ggplot() +
+  geom_segment(data = arrows_plant, aes(x = x, y = y, xend = xend, yend = yend),
+               arrow = arrow(length = unit(0.2, "cm")), color = "blue") +
+  geom_text(data = arrows_plant, aes(x = xend, y = yend, label = Variables),
+            hjust = 1.1, vjust = 1.1, size = 4, color = "red") +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +  # Horizontal line at 0
+  geom_vline(xintercept = 0, linetype = "dashed", color = "gray") +  # Vertical line at 0
+  labs(title = "PCA Plot of Plant Parameters (Loadings Only)",
+       x = pc1_label_plant, 
+       y = pc2_label_plant) +
+  theme_minimal()
+
+# Save PCA arrows plot for Plant_param
+ggsave("PCA_Plant_loadings.pdf", plot = pca_plant_arrows, width = 8, height = 6)
+
+
+# Loadings for PCA of Soil_param
+loadings_soil <- as.data.frame(pca_soil$rotation)
+
+# Calculate percentage contribution for PC1 and PC2
+explained_variance_soil <- summary(pca_soil)$importance[2, ] * 100
+pc1_label_soil <- paste0("Principal Component 1 (", round(explained_variance_soil[1], 2), "%)")
+pc2_label_soil <- paste0("Principal Component 2 (", round(explained_variance_soil[2], 2), "%)")
+
+# Create a dataframe for arrows
+arrows_soil <- data.frame(
+  x = 0,  # Origin x
+  y = 0,  # Origin y
+  xend = loadings_soil[, 1],  # PC1 Loadings
+  yend = loadings_soil[, 2],  # PC2 Loadings
+  Variables = rownames(loadings_soil)  # Variable names
+)
+
+# PCA plot with arrows for Soil_param
+pca_soil_arrows <- ggplot() +
+  geom_segment(data = arrows_soil, aes(x = x, y = y, xend = xend, yend = yend),
+               arrow = arrow(length = unit(0.2, "cm")), color = "blue") +
+  geom_text(data = arrows_soil, aes(x = xend, y = yend, label = Variables),
+            hjust = 1.1, vjust = 1.1, size = 4, color = "red") +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +  # Horizontal line at 0
+  geom_vline(xintercept = 0, linetype = "dashed", color = "gray") +  # Vertical line at 0
+  labs(title = "PCA Plot of Soil Parameters (Loadings Only)",
+       x = pc1_label_soil, 
+       y = pc2_label_soil) +
+  theme_minimal()
+
+# Save PCA arrows plot for Soil_param
+ggsave("PCA_Soil_loadings.pdf", plot = pca_soil_arrows, width = 8, height = 6)
+
+
+
+
+# Extract the loadings for Plant_param PCA
+loadings_plant <- as.data.frame(pca_plant$rotation)
+
+# Create a dataframe for the first three PCs
+loadings_plantdf <- data.frame(
+  Variables = rownames(loadings_plant),
+  PC1 = loadings_plant[, 1],
+  PC2 = loadings_plant[, 2],
+  PC3 = loadings_plant[, 3]
+)
+
+# Add absolute values for sorting
+loadings_plantdf <- loadings_plantdf %>%
+  mutate(Abs_PC1 = abs(PC1),
+         Abs_PC2 = abs(PC2),
+         Abs_PC3 = abs(PC3))
+
+# Sort by absolute values of PC1, PC2, or PC3
+sorted_loadings_plant <- loadings_plantdf %>%
+  arrange(desc(Abs_PC1))  # Change to Abs_PC2 or Abs_PC3 for other PCs
+
+# Print sorted loadings for Plant_param PCA
+print("Top contributing variables to PC1 (Plant_param):")
+print(sorted_loadings_plant)
+
+# Extract the loadings for Soil_param PCA
+loadings_soil <- as.data.frame(pca_soil$rotation)
+
+# Create a dataframe for the first three PCs
+loadings_soildf <- data.frame(
+  Variables = rownames(loadings_soil),
+  PC1 = loadings_soil[, 1],
+  PC2 = loadings_soil[, 2],
+  PC3 = loadings_soil[, 3]
+)
+
+# Add absolute values for sorting
+loadings_soildf <- loadings_soildf %>%
+  mutate(Abs_PC1 = abs(PC1),
+         Abs_PC2 = abs(PC2),
+         Abs_PC3 = abs(PC3))
+
+# Sort by absolute values of PC1, PC2, or PC3
+sorted_loadings_soil <- loadings_soildf %>%
+  arrange(desc(Abs_PC1))  # Change to Abs_PC2 or Abs_PC3 for other PCs
+
+# Print sorted loadings for Soil_param PCA
+print("Top contributing variables to PC1 (Soil_param):")
+print(sorted_loadings_soil)
+
+
+
+
+# Combine PCA data for plotting
+pca_combined <- data.frame(
+  Plant_PC1 = pca_plant$x[, 1],  # PC1 of Plant parameters
+  Soil_PC1 = pca_soil$x[, 1],    # PC1 of Soil parameters
+  Group = plant_soil$Group       # Group information (from the dataset)
+)
+
+pca_scatter <- ggplot(pca_combined, aes(x = Plant_PC1, y = Soil_PC1, color = Group)) +
+  geom_point(size = 3, alpha = 0.8) +  # Scatter points
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +  # Horizontal line at 0
+  geom_vline(xintercept = 0, linetype = "dashed", color = "gray") +  # Vertical line at 0
+  stat_ellipse(type = "norm", geom = "polygon", alpha = 0.2, 
+               aes(fill = Group), level = 0.8, show.legend = FALSE) +  # Same fill as dots
+  labs(title = "PCA Scatter Plot: PC1 of Plant vs PC1 of Soil",
+       x = "Plant PC1",
+       y = "Soil PC1") +
+  theme_minimal() +
+  theme(legend.position = "right",
+        axis.text = element_text(size = 10),
+        axis.title = element_text(size = 12, face = "bold")) +
+  scale_color_brewer(palette = "Set2") +  # Adjust color palette if needed
+  scale_fill_brewer(palette = "Set2")  # Ensure the fill of the ellipse matches the color of the dots
+
+# Save the scatter plot to a PDF
+ggsave("PCA_Scatter_PlantPC1_vs_SoilPC1.pdf", plot = pca_scatter, width = 8, height = 6)
+
+```
+
+11. Scatter plot comparing Principle Component 1 of plant parameters to Principle Component 1 of soil parameters
+```{r}
+# Combine PCA data for plotting
+pca_combined <- data.frame(
+  Plant_PC1 = pca_plant$x[, 1],  # PC1 of Plant parameters
+  Soil_PC1 = pca_soil$x[, 1],    # PC1 of Soil parameters
+  Group = plant_soil$Group       # Group information (from the dataset)
+)
+
+pca_scatter <- ggplot(pca_combined, aes(x = Plant_PC1, y = Soil_PC1, color = Group)) +
+  geom_point(size = 3, alpha = 0.8) +  # Scatter points
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +  # Horizontal line at 0
+  geom_vline(xintercept = 0, linetype = "dashed", color = "gray") +  # Vertical line at 0
+  stat_ellipse(type = "norm", geom = "polygon", alpha = 0.2, 
+               aes(fill = Group), level = 0.8, show.legend = FALSE) +  # Same fill as dots
+  labs(title = "PCA Scatter Plot: PC1 of Plant vs PC1 of Soil",
+       x = "Plant PC1",
+       y = "Soil PC1") +
+  theme_minimal() +
+  theme(legend.position = "right",
+        axis.text = element_text(size = 10),
+        axis.title = element_text(size = 12, face = "bold")) +
+  scale_color_brewer(palette = "Set2") +  # Adjust color palette if needed
+  scale_fill_brewer(palette = "Set2")  # Ensure the fill of the ellipse matches the color of the dots
+
+# Save the scatter plot to a PDF
+ggsave("PCA_Scatter_PlantPC1_vs_SoilPC1.pdf", plot = pca_scatter, width = 8, height = 6)
+
+
+```
+
+O.Get 15_LDAfunction.R JUST TO RUN
+```{r}
+# Load necessary libraries
+library(MASS)
+library(ggplot2)
+
+# Define the LDA function with the update
+perform_lda <- function(data, group_col, threshold = 0.1, plot_title_prefix = "") {
+  # Standardize the data
+  data_std <- data
+  predictors <- setdiff(names(data), group_col)
+  data_std[, predictors] <- scale(data[, predictors])
+  data_std[[group_col]] <- as.factor(data_std[[group_col]])
+  
+  # Perform LDA
+  lda_model <- lda(as.formula(paste(group_col, "~ .")), data = data_std)
+  
+  # Predictions and LDA scores
+  predictions <- predict(lda_model)
+  data_std$LD1 <- predictions$x[, 1]
+  data_std$LD2 <- predictions$x[, 2]
+  
+  # Plot LDA results
+  lda_plot <- ggplot(data_std, aes(x = LD1, y = LD2, color = !!sym(group_col), fill = !!sym(group_col))) +
+    geom_point(size = 3) +
+    stat_ellipse(geom = "polygon", alpha = 0.3) +
+    labs(title = paste(plot_title_prefix, "LDA Plot"), x = "LD1", y = "LD2") +
+    theme_minimal() +
+    theme(legend.title = element_blank())
+  print(lda_plot)  # Print LDA plot to the R graphics device
+  
+  # Extract and filter variable importance
+  coefficients <- lda_model$scaling
+  coefficients_df <- data.frame(
+    Variable = rownames(coefficients),
+    LD1 = coefficients[, 1],
+    LD2 = coefficients[, 2],
+    Importance = rowSums(abs(coefficients))
+  )
+  
+  # Exclude LD1 and LD2 from the arrow plot
+  coefficients_filtered <- subset(coefficients_df, Variable != "LD1" & Variable != "LD2" & Importance > threshold)
+  
+  # Plot variable importance arrows
+  arrow_plot <- ggplot(coefficients_filtered, aes(x = 0, y = 0)) +
+    geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +  # Zero line for LD2
+    geom_vline(xintercept = 0, linetype = "dashed", color = "gray") +  # Zero line for LD1
+    geom_segment(aes(xend = LD1, yend = LD2), 
+                 arrow = arrow(type = "closed", length = unit(0.1, "inches")), 
+                 linewidth = 1) +  # Arrows for variables
+    geom_text(aes(x = LD1, y = LD2, label = Variable), color = "red", size = 3, hjust = 1.5, vjust = 1.5) +
+    labs(title = paste(plot_title_prefix, "LDA Arrows (Variables Only)"), x = "LD1", y = "LD2") +
+    theme_minimal() +
+    theme(axis.text = element_text(color = "black"), 
+          axis.title = element_text(size = 12),       
+          axis.ticks = element_line(color = "black"))
+  print(arrow_plot)  # Print arrow plot to the R graphics device
+  
+  return(list(lda_model = lda_model, predictions = predictions, lda_plot = lda_plot, arrow_plot = arrow_plot))
+}
+
+
+```
+
+Linear Discriminant Analysis of all the variables
+```{r}
+CODE  19 TO DISPLAY
+```
+
+Linear Discriminant Analysis of plant parameters and Linear Discriminant Analysis of soil parameters.
+```{r}
+# Perform LDA for Plant Parameters
+plant_lda_results <- perform_lda(Plant_param, "Group", threshold = 0.1, plot_title_prefix = "Plant Parameters")
+ggsave("Plant_LDA_Plot.pdf", plot = plant_lda_results$lda_plot, width = 8, height = 6)
+ggsave("Plant_LDA_Arrows.pdf", plot = plant_lda_results$arrow_plot, width = 8, height = 6)
+
+# Perform LDA for Soil Parameters
+soil_lda_results <- perform_lda(Soil_param, "Group", threshold = 0.1, plot_title_prefix = "Soil Parameters")
+ggsave("Soil_LDA_Plot.pdf", plot = soil_lda_results$lda_plot, width = 8, height = 6)
+ggsave("Soil_LDA_Arrows.pdf", plot = soil_lda_results$arrow_plot, width = 8, height = 6)
+
+# Evaluate Performance for Plant Parameters
+plant_confusion <- table(Actual = Plant_param$Group, Predicted = plant_lda_results$predictions$class)
+plant_accuracy <- sum(diag(plant_confusion)) / sum(plant_confusion)
+cat("Plant LDA Accuracy:", plant_accuracy, "\n")
+
+# Evaluate Performance for Soil Parameters
+soil_confusion <- table(Actual = Soil_param$Group, Predicted = soil_lda_results$predictions$class)
+soil_accuracy <- sum(diag(soil_confusion)) / sum(soil_confusion)
+cat("Soil LDA Accuracy:", soil_accuracy, "\n")
+
+```
+
+Correlogram of all variables
+```{r}
+# Load necessary libraries
+if (!require(ggplot2)) install.packages("ggplot2")
+library(ggplot2)
+
+# Calculate correlation matrix
+correlation_matrix <- cor(Plant_param[ , -1], Soil_param[ , -1], use = "pairwise.complete.obs")
+
+# Convert the correlation matrix to a long format
+correlation_data <- as.data.frame(as.table(correlation_matrix))
+colnames(correlation_data) <- c("Plant_Parameter", "Soil_Parameter", "Correlation")
+
+# Correlogram with circles
+correlogram <- ggplot(correlation_data, aes(x = Plant_Parameter, y = Soil_Parameter)) +
+  geom_point(aes(size = abs(Correlation), color = Correlation)) +
+  scale_color_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0, 
+                        name = "Correlation") +
+  scale_size_continuous(range = c(2, 10), name = "Strength\nof Correlation") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1),
+        axis.text = element_text(size = 10),
+        axis.title = element_text(size = 12, face = "bold")) +
+  labs(title = "Correlogram: Plant vs. Soil Parameters",
+       x = "Plant Parameters",
+       y = "Soil Parameters")
+
+# Save correlogram to a file
+ggsave("Correlogram_plant_vs_soil.pdf", plot = correlogram, width = 10, height = 8)
+
+
+
+```
+
+1 Correlogram of specific root length correlation to plant parameters and 1 different 
+correlogram for specific root length to soil parameters
+```{r}
+# Load required libraries
+if (!require(ggplot2)) install.packages("ggplot2")
+if (!require(reshape2)) install.packages("reshape2")
+library(ggplot2)
+library(reshape2)
+
+# Extract SRL (Specific Root Length)
+SRL <- Plant_param$SRL
+
+# Exclude SRL column and retain only numeric columns from Plant parameters
+Plant_param_no_srl <- Plant_param[, !names(Plant_param) %in% "SRL"]
+Plant_param_no_srl <- Plant_param_no_srl[sapply(Plant_param_no_srl, is.numeric)]  # Retain only numeric columns
+
+# Exclude SRL column and retain only numeric columns from Soil parameters
+Soil_param_numeric <- Soil_param[sapply(Soil_param, is.numeric)]  # Retain only numeric columns
+
+# Prepare data for correlogram: SRL vs Plant parameters
+plant_corr <- sapply(Plant_param_no_srl, function(x) cor(SRL, x, use = "complete.obs"))
+plant_corr_df <- data.frame(Variable = names(plant_corr), Correlation = plant_corr)
+plant_corr_df <- plant_corr_df[order(plant_corr_df$Correlation, decreasing = TRUE), ]
+
+# Prepare data for correlogram: SRL vs Soil parameters
+soil_corr <- sapply(Soil_param_numeric, function(x) cor(SRL, x, use = "complete.obs"))
+soil_corr_df <- data.frame(Variable = names(soil_corr), Correlation = soil_corr)
+soil_corr_df <- soil_corr_df[order(soil_corr_df$Correlation, decreasing = TRUE), ]
+
+# Plot 1: SRL vs Plant parameters
+plot1 <- ggplot(plant_corr_df, aes(x = Variable, y = "SRL", fill = Correlation, size = abs(Correlation))) +
+  geom_point(shape = 21, color = "black") +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0, limits = c(-1, 1)) +
+  scale_size_continuous(range = c(3, 8)) +
+  labs(title = "Correlation: SRL vs Plant Parameters",
+       x = "Plant Parameters", y = NULL, fill = "Correlation", size = "Strength") +
+  theme_minimal(base_size = 10) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1),
+    axis.title.x = element_text(size = 10, margin = margin(t = 5)),
+    plot.margin = margin(5, 5, 5, 5)
+  )
+
+# Plot 2: SRL vs Soil parameters
+plot2 <- ggplot(soil_corr_df, aes(x = Variable, y = "SRL", fill = Correlation, size = abs(Correlation))) +
+  geom_point(shape = 21, color = "black") +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0, limits = c(-1, 1)) +
+  scale_size_continuous(range = c(3, 8)) +
+  labs(title = "Correlation: SRL vs Soil Parameters",
+       x = "Soil Parameters", y = NULL, fill = "Correlation", size = "Strength") +
+  theme_minimal(base_size = 10) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1),
+    axis.title.x = element_text(size = 10, margin = margin(t = 5)),
+    plot.margin = margin(5, 5, 5, 5)
+  )
+
+# Save both plots to a single PDF
+pdf("SRL_Correlogram.pdf", width = 6, height = 4)  # Smaller plot dimensions
+print(plot1)
+print(plot2)
+dev.off()
+
+
+
+```
+
+Some notable correlations 
+```{r}
+# First plot: Correlation between Root Length and Aboveground Biomass
+subset_data <- plant_soil[, c("RootLength", "Aboveground_Biomass", "Group")]
+
+# Fit a linear model to get the R-squared value
+model <- lm(Aboveground_Biomass ~ RootLength, data = subset_data)
+r_squared <- summary(model)$r.squared
+
+# Scatter plot with color based on Group
+library(ggplot2)
+ggplot(subset_data, aes(x = RootLength, y = Aboveground_Biomass, color = Group)) +
+  geom_point(alpha = 0.6, size = 2) + # Scatter plot
+  geom_smooth(method = "lm", color = "red", se = FALSE) + # Linear regression line
+  annotate("text", x = min(subset_data$RootLength, na.rm = TRUE), 
+           y = max(subset_data$Aboveground_Biomass, na.rm = TRUE), 
+           label = paste("R² =", round(r_squared, 3)),
+           hjust = 0, vjust = 1, size = 5, color = "black") + # R-squared annotation
+  labs(title = "Correlation between Root Length and Aboveground Biomass",
+       x = "Root Length", y = "Aboveground Biomass") + 
+  theme_minimal()
+
+
+# Second plot: Correlation between SRL and Aboveground Biomass
+subset_data <- plant_soil[, c("SRL", "Aboveground_Biomass", "Group")]
+
+# Fit a linear model to get the R-squared value
+model <- lm(Aboveground_Biomass ~ SRL, data = subset_data)
+r_squared <- summary(model)$r.squared
+
+# Scatter plot with color based on Group
+ggplot(subset_data, aes(x = SRL, y = Aboveground_Biomass, color = Group)) +
+  geom_point(alpha = 0.6, size = 2) + # Scatter plot
+  geom_smooth(method = "lm", color = "red", se = FALSE) + # Linear regression line
+  annotate("text", x = min(subset_data$SRL, na.rm = TRUE), 
+           y = max(subset_data$Aboveground_Biomass, na.rm = TRUE), 
+           label = paste("R² =", round(r_squared, 3)),
+           hjust = 0, vjust = 1, size = 5, color = "black") + # R-squared annotation
+  labs(title = "Correlation between SRL and Aboveground Biomass",
+       x = "Specific Root Length (SRL)", y = "Aboveground Biomass") + 
+  theme_minimal()
+
+
+# Third plot: Correlation between Plant_P and SRL
+subset_data <- plant_soil[, c("Plant_P", "SRL", "Group")]
+
+# Fit a linear model to get the R-squared value
+model <- lm(SRL ~ Plant_P, data = subset_data)
+r_squared <- summary(model)$r.squared
+
+# Scatter plot with color based on Group
+ggplot(subset_data, aes(x = Plant_P, y = SRL, color = Group)) +
+  geom_point(alpha = 0.6, size = 2) + # Scatter plot
+  geom_smooth(method = "lm", color = "red", se = FALSE) + # Linear regression line
+  annotate("text", x = min(subset_data$Plant_P, na.rm = TRUE), 
+           y = max(subset_data$SRL, na.rm = TRUE), 
+           label = paste("R² =", round(r_squared, 3)),
+           hjust = 0, vjust = 1, size = 5, color = "black") + # R-squared annotation
+  labs(title = "Correlation between Plant_P and SRL",
+       x = "Plant P", y = "SRL") + 
+  theme_minimal()
+
+
+# Fourth plot: Correlation between Plant_P and Root Length
+subset_data <- plant_soil[, c("Plant_P", "RootLength", "Group")]
+
+# Fit a linear model to get the R-squared value
+model <- lm(Plant_P ~ RootLength, data = subset_data)
+r_squared <- summary(model)$r.squared
+
+# Scatter plot with color based on Group
+ggplot(subset_data, aes(x = RootLength, y = Plant_P, color = Group)) +
+  geom_point(alpha = 0.6, size = 2) + # Scatter plot
+  geom_smooth(method = "lm", color = "red", se = FALSE) + # Linear regression line
+  annotate("text", x = min(subset_data$RootLength, na.rm = TRUE), 
+           y = max(subset_data$Plant_P, na.rm = TRUE), 
+           label = paste("R² =", round(r_squared, 3)),
+           hjust = 0, vjust = 1, size = 5, color = "black") + # R-squared annotation
+  labs(title = "Correlation between Plant_P and Root Length",
+       x = "Root Length", y = "Plant P") + 
+  theme_minimal()
+
+
+
+
+
+# Subset the relevant columns
+subset_data <- plant_soil[, c("Total_Biomass", "Plant_P", "Group")]
+
+# Fit a linear model to get the R-squared value
+model <- lm(Plant_P ~ Total_Biomass, data = subset_data)
+r_squared <- summary(model)$r.squared
+
+# Create the scatter plot with a linear model, color by Group, and annotate the R-squared value
+library(ggplot2)
+ggplot(subset_data, aes(x = Total_Biomass, y = Plant_P, color = Group)) +
+  geom_point(alpha = 0.6, size = 2) + # Scatter plot with color by Group
+  geom_smooth(method = "lm", color = "red", se = FALSE) + # Linear regression line
+  annotate("text", x = min(subset_data$Total_Biomass, na.rm = TRUE), 
+           y = max(subset_data$Plant_P, na.rm = TRUE), 
+           label = paste("R² =", round(r_squared, 3)),
+           hjust = 0, vjust = 1, size = 5, color = "black") + # R-squared annotation
+  labs(title = "Correlation between Total Biomass and Plant P",
+       x = "Total Biomass", y = "Plant P") + # Axis labels
+  theme_minimal()
+
+
+
+# Subset the relevant columns and filter for Group A2 and AB5
+subset_data <- plant_soil[plant_soil$Group %in% c("A2", "AB5"), c("Total_Biomass", "Plant_P", "Group")]
+
+# Fit a linear model to get the R-squared value
+model <- lm(Plant_P ~ Total_Biomass, data = subset_data)
+r_squared <- summary(model)$r.squared
+
+# Create the scatter plot with a linear model, color by Group, and annotate the R-squared value
+library(ggplot2)
+ggplot(subset_data, aes(x = Total_Biomass, y = Plant_P, color = Group)) +
+  geom_point(alpha = 0.6, size = 2) + # Scatter plot with color by Group
+  geom_smooth(method = "lm", color = "red", se = FALSE) + # Linear regression line
+  annotate("text", x = min(subset_data$Total_Biomass, na.rm = TRUE), 
+           y = max(subset_data$Plant_P, na.rm = TRUE), 
+           label = paste("R² =", round(r_squared, 3)),
+           hjust = 0, vjust = 1, size = 5, color = "black") + # R-squared annotation
+  labs(title = "Correlation between Total Biomass and Plant P (A2 & AB5)",
+       x = "Total Biomass", y = "Plant P") + # Axis labels
+  theme_minimal()
+
+
+
+
+
+# Subset the relevant columns
+subset_data <- plant_soil[, c("Rootbranches", "Aboveground_Biomass", "Group")]
+
+# Fit a linear model to get the R-squared value
+model <- lm(Aboveground_Biomass ~ Rootbranches, data = subset_data)
+r_squared <- summary(model)$r.squared
+
+# Create the scatter plot with a linear model, color by Group, and annotate the R-squared value
+library(ggplot2)
+ggplot(subset_data, aes(x = Rootbranches, y = Aboveground_Biomass, color = Group)) +
+  geom_point(alpha = 0.6, size = 2) + # Scatter plot with color by Group
+  geom_smooth(method = "lm", color = "red", se = FALSE) + # Linear regression line
+  annotate("text", x = min(subset_data$Rootbranches, na.rm = TRUE), 
+           y = max(subset_data$Aboveground_Biomass, na.rm = TRUE), 
+           label = paste("R² =", round(r_squared, 3)),
+           hjust = 0, vjust = 1, size = 5, color = "black") + # R-squared annotation
+  labs(title = "Correlation between Root Branches and Aboveground Biomass",
+       x = "Root Branches", y = "Aboveground Biomass") + # Axis labels
+  theme_minimal()
+
+
+# Subset the relevant columns
+subset_data <- plant_soil[, c("Rootbranches", "Plant_P", "Group")]
+
+# Fit a linear model to get the R-squared value
+model <- lm(Plant_P ~ Rootbranches, data = subset_data)
+r_squared <- summary(model)$r.squared
+
+# Create the scatter plot with a linear model, color by Group, and annotate the R-squared value
+library(ggplot2)
+ggplot(subset_data, aes(x = Rootbranches, y = Plant_P, color = Group)) +
+  geom_point(alpha = 0.6, size = 2) + # Scatter plot with color by Group
+  geom_smooth(method = "lm", color = "red", se = FALSE) + # Linear regression line
+  annotate("text", x = min(subset_data$Rootbranches, na.rm = TRUE), 
+           y = max(subset_data$Plant_P, na.rm = TRUE), 
+           label = paste("R² =", round(r_squared, 3)),
+           hjust = 0, vjust = 1, size = 5, color = "black") + # R-squared annotation
+  labs(title = "Correlation between Root Branches and Plant P",
+       x = "Root Branches", y = "Plant P") + # Axis labels
+  theme_minimal()
+
+
+```
+
+Non linear correlation of urease (UE) and plant phosophorus (Plant_P)
+```{r}
+# Fit an exponential decay model
+exp_model <- nls(UE ~ a * exp(b * Plant_P), data = df_numeric, start = list(a = 400, b = -10))
+summary(exp_model)
+
+# Plot the non-linear fit
+ggplot(df_numeric, aes(x = Plant_P, y = UE)) +
+  geom_point(color = "blue", alpha = 0.6, size = 2) +
+  geom_line(aes(y = predict(exp_model)), color = "purple", size = 1) +
+  labs(title = "Exponential Fit: UE vs Plant_P", x = "Plant_P", y = "UE") +
+  theme_minimal()
+
+
+
+
+# Load libraries
+library(ggplot2)
+
+# Fit an exponential non-linear model
+exp_model <- nls(UE ~ a * exp(b * Plant_P), data = df_numeric, start = list(a = 400, b = -10))
+
+# Predict fitted values
+df_numeric$Predicted_UE <- predict(exp_model)
+
+# Calculate pseudo-R²
+RSS <- sum((df_numeric$UE - df_numeric$Predicted_UE)^2) # Residual sum of squares
+TSS <- sum((df_numeric$UE - mean(df_numeric$UE))^2)     # Total sum of squares
+pseudo_R2 <- 1 - (RSS / TSS)                           # Pseudo-R²
+
+# Plot with pseudo-R² on the graph
+ggplot(df_numeric, aes(x = Plant_P, y = UE)) +
+  geom_point(color = "blue", alpha = 0.6, size = 2) +
+  geom_line(aes(y = Predicted_UE), color = "red", size = 1) +
+  annotate("text", x = max(df_numeric$Plant_P) * 0.8, y = max(df_numeric$UE) * 0.9,
+           label = paste("Pseudo-R² =", round(pseudo_R2, 3)), size = 5, color = "black") +
+  labs(title = "Exponential Model: UE vs Plant_P")),
+       x = "Plant_P", y = "UE") +
+  theme_minimal()
+
+
+
+# Load required libraries
+library(ggplot2)
+
+# Fit an exponential model: UE = a * exp(b * Plant_P)
+exp_model <- nls(UE ~ a * exp(b * Plant_P), data = df_numeric, start = list(a = 400, b = -10))
+
+# Extract model coefficients
+coeffs <- coef(exp_model)
+a <- round(coeffs["a"], 2)
+b <- round(coeffs["b"], 4)
+
+# Predict values for the curve
+df_numeric$Predicted_UE <- predict(exp_model)
+
+# Calculate pseudo-R²
+RSS <- sum((df_numeric$UE - df_numeric$Predicted_UE)^2) # Residual sum of squares
+TSS <- sum((df_numeric$UE - mean(df_numeric$UE))^2)     # Total sum of squares
+pseudo_R2 <- 1 - (RSS / TSS)                           # Pseudo-R²
+
+# Construct the formula string to display
+formula_text <- paste0("UE = ", a, " * exp(", b, " * Plant_P)")
+pseudoR2_text <- paste0("Pseudo-R² = ", round(pseudo_R2, 3))
+
+# Plot the data with the exponential curve, formula, and pseudo-R²
+ggplot(df_numeric, aes(x = Plant_P, y = UE)) +
+  geom_point(color = "blue", alpha = 0.6, size = 2) +
+  geom_line(aes(y = Predicted_UE), color = "red", size = 1) +
+  # Adjust x to move annotations further left
+  annotate("text", x = max(df_numeric$Plant_P) * 0.4, y = max(df_numeric$UE) * 0.9,
+           label = formula_text, size = 5, color = "black", hjust = 0) +
+  annotate("text", x = max(df_numeric$Plant_P) * 0.6, y = max(df_numeric$UE) * 0.8,
+           label = pseudoR2_text, size = 5, color = "black", hjust = 0) +
+  labs(title = "Exponential Model: UE vs Plant_P",
+       x = "Plant_P", y = "UE") +
+  theme_minimal()
+
+```
+
+
 
 ### 7. Discussion. From your objectives.
 
