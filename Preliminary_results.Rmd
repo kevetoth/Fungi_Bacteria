@@ -38,7 +38,26 @@ The <u>hypotheses</u> are 1) AMF and PGPR could mutually symbiose and enhance th
 
 It comes from the scientific article [Cooperation between arbuscular mycorrhizal fungi and plant growth-promoting bacteria and their effects on plant growth and soil quality](https://peerj.com/articles/13080/) by Yu L, Zhang H, Zhang W, Liu K, Liu M, Shao X. 2022.
 
-DATA DISPLAYS 
+Create an interactive table
+
+```{r}
+
+source("~/Desktop/Fungi_Bacteria/R/00_GetData.R") 
+print(plant_soil)
+
+```
+
+# Afficher le tbl_df dans un tableau formaté
+```{r display_tbl_kable}
+library(knitr)
+kable(plant_soil, caption = "plant_soil")
+```
+
+
+```{r}
+# Source an external R script
+source("~/Desktop/Fungi_Bacteria/R/00_GetData.R")
+```
 
 ### 5.b What have you done? And what did you use to do it? Step by step, so anyone could do it again by reading this part.
 
@@ -57,7 +76,7 @@ Display PDF as Image with Width Adjustments
 ```{r}
 source("~/Desktop/Fungi_Bacteria/R/02_ANOVAs.R")
 
-knitr::include_graphics("ANOVA_Boxplots.pdf")
+knitr::include_graphics("Significant_ANOVA_Boxplots.pdf")
 ```
 
 To display the .pdf :
@@ -78,9 +97,9 @@ We plan to start with each variable analyses separately then ANOVA analyses we'l
 
 ### 6. Results. Figures and tables with captions and description of what do they mean. Never include citations in this part. This is only your work.
 
+J.Get 09_ANOVAptable.R Corrected P values of ANOVA analysis of each variable
 
-J.Get 09_ANOVAptable.R  Corrected P values of ANOVA analysis of each variable
-```{r}
+```{r, echo=FALSE}
 # Filter numeric variables for ANOVA
 response_vars <- colnames(plant_soil)[sapply(plant_soil, is.numeric) & colnames(plant_soil) != "Group"]
 
@@ -110,8 +129,8 @@ print(anova_results)
 
 ```
 
-...
-Showcasing all significant ANOVA analyses in boxplots
+... Showcasing all significant ANOVA analyses in boxplots
+
 ```{r}
 # Load necessary libraries
 library(ggplot2)
@@ -161,8 +180,9 @@ dev.off()
 
 print("Plots saved to ANOVA_Boxplots.pdf")
 ```
-OR
-R.Get 18_ANOVAmix.R
+
+OR R.Get 18_ANOVAmix.R
+
 ```{r}
 # Load necessary libraries
 library(ggplot2)
@@ -229,9 +249,11 @@ dev.off()
 print("Significant_ANOVA_mix.pdf")
 
 ```
+
 ...
 
 Showcasing all ANOVA analysis with significant difference between AMF treatment and AMF + PGPB treatments
+
 ```{r}
 # Load necessary libraries
 library(ggplot2)
@@ -282,8 +304,8 @@ dev.off()
 print("Plots saved to ANOVA_Boxplots.pdf")
 ```
 
-
 SHOULD BE RUN FOR THE 8 H. Get 07_Subsetting soil-plant parameters.R
+
 ```{r}
 # Subset 1: Plant parameters (including 'Group' as the treatment column)
 Plant_param <- plant_soil[,c("Group","Aboveground_Biomass","Belowground_Biomass"
@@ -303,6 +325,7 @@ print(Soil_param)
 ```
 
 Principle Component Analysis (PCA) of plants measured variables and soil measurable separately
+
 ```{r}
 # Load necessary libraries
 if (!require(ggplot2)) install.packages("ggplot2")
@@ -559,6 +582,7 @@ ggsave("PCA_Scatter_PlantPC1_vs_SoilPC1.pdf", plot = pca_scatter, width = 8, hei
 ```
 
 11. Scatter plot comparing Principle Component 1 of plant parameters to Principle Component 1 of soil parameters
+
 ```{r}
 # Combine PCA data for plotting
 pca_combined <- data.frame(
@@ -590,6 +614,73 @@ ggsave("PCA_Scatter_PlantPC1_vs_SoilPC1.pdf", plot = pca_scatter, width = 8, hei
 ```
 
 O.Get 15_LDAfunction.R JUST TO RUN
+
+```{r}
+# Load necessary libraries
+library(MASS)
+library(ggplot2)
+
+# Define the LDA function with the update
+perform_lda <- function(data, group_col, threshold = 0.1, plot_title_prefix = "") {
+  # Standardize the data
+  data_std <- data
+  predictors <- setdiff(names(data), group_col)
+  data_std[, predictors] <- scale(data[, predictors])
+  data_std[[group_col]] <- as.factor(data_std[[group_col]])
+  
+  # Perform LDA
+  lda_model <- lda(as.formula(paste(group_col, "~ .")), data = data_std)
+  
+  # Predictions and LDA scores
+  predictions <- predict(lda_model)
+  data_std$LD1 <- predictions$x[, 1]
+  data_std$LD2 <- predictions$x[, 2]
+  
+  # Plot LDA results
+  lda_plot <- ggplot(data_std, aes(x = LD1, y = LD2, color = !!sym(group_col), fill = !!sym(group_col))) +
+    geom_point(size = 3) +
+    stat_ellipse(geom = "polygon", alpha = 0.3) +
+    labs(title = paste(plot_title_prefix, "LDA Plot"), x = "LD1", y = "LD2") +
+    theme_minimal() +
+    theme(legend.title = element_blank())
+  print(lda_plot)  # Print LDA plot to the R graphics device
+  
+  # Extract and filter variable importance
+  coefficients <- lda_model$scaling
+  coefficients_df <- data.frame(
+    Variable = rownames(coefficients),
+    LD1 = coefficients[, 1],
+    LD2 = coefficients[, 2],
+    Importance = rowSums(abs(coefficients))
+  )
+  
+  # Exclude LD1 and LD2 from the arrow plot
+  coefficients_filtered <- subset(coefficients_df, Variable != "LD1" & Variable != "LD2" & Importance > threshold)
+  
+  # Plot variable importance arrows
+  arrow_plot <- ggplot(coefficients_filtered, aes(x = 0, y = 0)) +
+    geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +  # Zero line for LD2
+    geom_vline(xintercept = 0, linetype = "dashed", color = "gray") +  # Zero line for LD1
+    geom_segment(aes(xend = LD1, yend = LD2), 
+                 arrow = arrow(type = "closed", length = unit(0.1, "inches")), 
+                 linewidth = 1) +  # Arrows for variables
+    geom_text(aes(x = LD1, y = LD2, label = Variable), color = "red", size = 3, hjust = 1.5, vjust = 1.5) +
+    labs(title = paste(plot_title_prefix, "LDA Arrows (Variables Only)"), x = "LD1", y = "LD2") +
+    theme_minimal() +
+    theme(axis.text = element_text(color = "black"), 
+          axis.title = element_text(size = 12),       
+          axis.ticks = element_line(color = "black"))
+  print(arrow_plot)  # Print arrow plot to the R graphics device
+  
+  return(list(lda_model = lda_model, predictions = predictions, lda_plot = lda_plot, arrow_plot = arrow_plot))
+}
+
+
+```
+
+
+
+To be able to display LDA of all the variables 
 ```{r}
 # Load necessary libraries
 library(MASS)
@@ -654,11 +745,19 @@ perform_lda <- function(data, group_col, threshold = 0.1, plot_title_prefix = ""
 ```
 
 Linear Discriminant Analysis of all the variables
+
+TO DISPLAY
+
 ```{r}
-CODE  19 TO DISPLAY
+big_LDA <- perform_lda(plant_soil, "Group", threshold = 0.1, plot_title_prefix = "All variables measured")
+
+# Save the plots from the object `big_LDA`
+ggsave("Big_LDA_Plot.pdf", plot = big_LDA$lda_plot, width = 8, height = 6)
+ggsave("Big_LDA_Arrows.pdf", plot = big_LDA$arrow_plot, width = 8, height = 6)
 ```
 
 Linear Discriminant Analysis of plant parameters and Linear Discriminant Analysis of soil parameters.
+
 ```{r}
 # Perform LDA for Plant Parameters
 plant_lda_results <- perform_lda(Plant_param, "Group", threshold = 0.1, plot_title_prefix = "Plant Parameters")
@@ -683,6 +782,7 @@ cat("Soil LDA Accuracy:", soil_accuracy, "\n")
 ```
 
 Correlogram of all variables
+
 ```{r}
 # Load necessary libraries
 if (!require(ggplot2)) install.packages("ggplot2")
@@ -716,8 +816,8 @@ ggsave("Correlogram_plant_vs_soil.pdf", plot = correlogram, width = 10, height =
 
 ```
 
-1 Correlogram of specific root length correlation to plant parameters and 1 different 
-correlogram for specific root length to soil parameters
+1 Correlogram of specific root length correlation to plant parameters and 1 different correlogram for specific root length to soil parameters
+
 ```{r}
 # Load required libraries
 if (!require(ggplot2)) install.packages("ggplot2")
@@ -783,7 +883,8 @@ dev.off()
 
 ```
 
-Some notable correlations 
+Some notable correlations
+
 ```{r}
 # First plot: Correlation between Root Length and Aboveground Biomass
 subset_data <- plant_soil[, c("RootLength", "Aboveground_Biomass", "Group")]
@@ -959,86 +1060,9 @@ ggplot(subset_data, aes(x = Rootbranches, y = Plant_P, color = Group)) +
 
 ```
 
-Non linear correlation of urease (UE) and plant phosophorus (Plant_P)
-```{r}
-# Fit an exponential decay model
-exp_model <- nls(UE ~ a * exp(b * Plant_P), data = df_numeric, start = list(a = 400, b = -10))
-summary(exp_model)
+*Non linear correlation of urease (UE) and plant phosophorus (Plant_P)*
 
-# Plot the non-linear fit
-ggplot(df_numeric, aes(x = Plant_P, y = UE)) +
-  geom_point(color = "blue", alpha = 0.6, size = 2) +
-  geom_line(aes(y = predict(exp_model)), color = "purple", size = 1) +
-  labs(title = "Exponential Fit: UE vs Plant_P", x = "Plant_P", y = "UE") +
-  theme_minimal()
-
-
-
-
-# Load libraries
-library(ggplot2)
-
-# Fit an exponential non-linear model
-exp_model <- nls(UE ~ a * exp(b * Plant_P), data = df_numeric, start = list(a = 400, b = -10))
-
-# Predict fitted values
-df_numeric$Predicted_UE <- predict(exp_model)
-
-# Calculate pseudo-R²
-RSS <- sum((df_numeric$UE - df_numeric$Predicted_UE)^2) # Residual sum of squares
-TSS <- sum((df_numeric$UE - mean(df_numeric$UE))^2)     # Total sum of squares
-pseudo_R2 <- 1 - (RSS / TSS)                           # Pseudo-R²
-
-# Plot with pseudo-R² on the graph
-ggplot(df_numeric, aes(x = Plant_P, y = UE)) +
-  geom_point(color = "blue", alpha = 0.6, size = 2) +
-  geom_line(aes(y = Predicted_UE), color = "red", size = 1) +
-  annotate("text", x = max(df_numeric$Plant_P) * 0.8, y = max(df_numeric$UE) * 0.9,
-           label = paste("Pseudo-R² =", round(pseudo_R2, 3)), size = 5, color = "black") +
-  labs(title = "Exponential Model: UE vs Plant_P")),
-       x = "Plant_P", y = "UE") +
-  theme_minimal()
-
-
-
-# Load required libraries
-library(ggplot2)
-
-# Fit an exponential model: UE = a * exp(b * Plant_P)
-exp_model <- nls(UE ~ a * exp(b * Plant_P), data = df_numeric, start = list(a = 400, b = -10))
-
-# Extract model coefficients
-coeffs <- coef(exp_model)
-a <- round(coeffs["a"], 2)
-b <- round(coeffs["b"], 4)
-
-# Predict values for the curve
-df_numeric$Predicted_UE <- predict(exp_model)
-
-# Calculate pseudo-R²
-RSS <- sum((df_numeric$UE - df_numeric$Predicted_UE)^2) # Residual sum of squares
-TSS <- sum((df_numeric$UE - mean(df_numeric$UE))^2)     # Total sum of squares
-pseudo_R2 <- 1 - (RSS / TSS)                           # Pseudo-R²
-
-# Construct the formula string to display
-formula_text <- paste0("UE = ", a, " * exp(", b, " * Plant_P)")
-pseudoR2_text <- paste0("Pseudo-R² = ", round(pseudo_R2, 3))
-
-# Plot the data with the exponential curve, formula, and pseudo-R²
-ggplot(df_numeric, aes(x = Plant_P, y = UE)) +
-  geom_point(color = "blue", alpha = 0.6, size = 2) +
-  geom_line(aes(y = Predicted_UE), color = "red", size = 1) +
-  # Adjust x to move annotations further left
-  annotate("text", x = max(df_numeric$Plant_P) * 0.4, y = max(df_numeric$UE) * 0.9,
-           label = formula_text, size = 5, color = "black", hjust = 0) +
-  annotate("text", x = max(df_numeric$Plant_P) * 0.6, y = max(df_numeric$UE) * 0.8,
-           label = pseudoR2_text, size = 5, color = "black", hjust = 0) +
-  labs(title = "Exponential Model: UE vs Plant_P",
-       x = "Plant_P", y = "UE") +
-  theme_minimal()
-
-```
-
+MISS THE R CHUNK
 
 
 ### 7. Discussion. From your objectives.
