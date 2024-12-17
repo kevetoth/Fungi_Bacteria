@@ -4,10 +4,9 @@ authors Group A : "Keve Toth ; Jakov Cancar ; Camille Delabaere"
 date: "2024-12-01"
 output: 
   html_document
-  css: styles.css
 ---
 
-## Title : Preliminary_results of [Cooperation between arbuscular mycorrhizal fungi and plant growth-promoting bacteria and their effects on plant growth and soil quality](https://peerj.com/articles/13080/)
+## 1/ Title : Preliminary_results of [Cooperation between arbuscular mycorrhizal fungi and plant growth-promoting bacteria and their effects on plant growth and soil quality](https://peerj.com/articles/13080/)
 
 ## Preamble :
 
@@ -17,7 +16,7 @@ This is the final project for the subject "Data Acquisition Analysis and Scienti
 
 In this project the students chose a scientific article and redo all possible statistic analyses and graphics from it, trying different approaches to see if they can improve them. They will use the data included in the article and follow the Material and methods chapter as a guide.
 
-### Introduction. Why your project is interesting? & What is known already about it?
+### 2/ Introduction. Why your project is interesting? & What is known already about it?
 
 We chose this scientific paper because we were interested in the knowledge we could gain about the relationship between plants & microorganisms *(here arbuscular mycorrhizal fungi (AMF) & plant growth-promoting bacteria (PGPB))*. A way to understand how the growth of plants & physico chemical properties of the soil are influenced by different treatments. Finaly, as "Almost 25% of the Earth’s biodiversity is composed of soil microorganisms (...)" (Fierer, 2017; Wagg et al., 2019; Whitman, Coleman & Wiebe, 1998), we thought we would acquire knowledge that we can later on, apply during our career.
 
@@ -33,21 +32,24 @@ The <u>objectives</u> are to analyse if arbuscular mycorrhizal fungi\* AMF\* & p
 
 The <u>hypotheses</u> are 1) AMF and PGPR could mutually symbiose and enhance the plant growth of Elymus nutans Griseb, & (2) the co-existence of AMF and PGPR could improve plant traits and soil quality better than their individual applications.
 
-### 5. Methods.
+### 5. Methods
 
-### 5.a Origin & structure of the data.
+### 5.a Origin & structure of the data
 
 It comes from the scientific article [Cooperation between arbuscular mycorrhizal fungi and plant growth-promoting bacteria and their effects on plant growth and soil quality](https://peerj.com/articles/13080/) by Yu L, Zhang H, Zhang W, Liu K, Liu M, Shao X. 2022.
 
 As we wanted to make the data more readable and usable by R code, it was sorted & reorganized in 00_GetData.R.
 
-Finding Path of a File in R (RStudio)
-
-file.choose("00_GetData.R")
+# Source an external R script
 
 ```{r}
-# Source an external R script
-source ("~/Desktop/Fungi_Bacteria/R/00_GetData.R")
+source ("~/Desktop/Fungi_Bacteria/R/07_Subsetting soil-plant parameters.R")
+Pllibrary(knitr)
+kable(Plant_param)
+
+Plant_param <- as.data.frame(Plant_param)
+  
+print(Plant_param)
 ```
 
 ### 5.b What have you done? And what did you use to do it? Step by step, so anyone could do it again by reading this part.
@@ -67,7 +69,7 @@ Display PDF as Image with Width Adjustments
 ```{r}
 source("~/Desktop/Fungi_Bacteria/R/02_ANOVAs.R")
 
-knitr::include_graphics("~/Desktop/Fungi_Bacteria/R/02_ANOVAs.R")
+knitr::include_graphics("ANOVA_Boxplots.pdf")
 ```
 
 To display the .pdf :
@@ -87,9 +89,6 @@ PCA is a statistical technique used for dimensional reduction and data simplific
 We plan to start with each variable analyses separately then ANOVA analyses we'll combine these small results analyses with the knowledge acquire from the article chosen to define the larger scale multivariate analyses. These might be a relationship between soil nutrients/quality and plant size measurements (multiple roots measurements and above ground biomass).
 
 ### 6. Results. Figures and tables with captions and description of what do they mean. Never include citations in this part. This is only your work.
-
-
-# KEVE COUCOU
 
 ### 7. Discussion. From your objectives.
 
