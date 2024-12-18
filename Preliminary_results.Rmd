@@ -29,6 +29,7 @@ h1, h2, h3 {
 PCA Analysis
 
 <div class="section">
+    
 
 ## Title : Preliminary results of [Cooperation between arbuscular mycorrhizal fungi and plant growth-promoting bacteria and their effects on plant growth and soil quality](https://peerj.com/articles/13080/)
 
@@ -94,9 +95,9 @@ PCA is a statistical technique used for dimensional reduction and data simplific
 
 -   <u>LDA</u> (Linear Discriminant Analysis) It works by finding a linear combination of features that best separates multiple classes.
 
-**NB**: Unlike PCA (*unsupervising and focusing on maximizing variance*) LDA aims to maximize the separation between different classes.
-
 We plan to start with each variable analyses separately then ANOVA analyses we'll combine these small results analyses with the knowledge acquire from the article chosen to define the larger scale multivariate analyses. These might be a relationship between soil nutrients/quality and plant size measurements (multiple roots measurements and above ground biomass). 
+
+**NB**: Unlike PCA (*unsupervising and focusing on maximizing variance*) LDA aims to maximize the separation between different classes.
 
 <br> <br>
 
@@ -107,6 +108,8 @@ We plan to start with each variable analyses separately then ANOVA analyses we'l
 # <u>Corrected P values of ANOVA analysis of each variable</u>
 
 ```{r,echo=FALSE}
+library(DT)
+
 # Filter numeric variables for ANOVA
 response_vars <- colnames(plant_soil)[sapply(plant_soil, is.numeric) & colnames(plant_soil) != "Group"]
 # Initialize a dataframe to store ANOVA results
@@ -129,11 +132,10 @@ anova_results$Bonferroni_P <- p.adjust(anova_results$P_Value, method = "bonferro
 # Save ANOVA results to a CSV file
 write.csv(anova_results, "ANOVA_Results.csv", row.names = FALSE)
 
+library(knitr)
 
-# Display the results
-print("ANOVA Results with Bonferroni Correction:")
-print(anova_results)
-
+# Display the results as a simple table
+kable(anova_results, caption = "ANOVA Results with Bonferroni Correction")
 ```
 
 <br> <br>
@@ -208,25 +210,25 @@ print("Significant_ANOVA_mix.pdf")
 ```
 
 ```{r, echo=FALSE}
-# Charger les bibliothèques
-library(pdftools)  # Pour lire et rendre les pages PDF
-library(magick)    # Pour manipuler les images
-library(knitr)     # Pour inclure les images dans le HTML
+# Load the libraries
+library(pdftools)  # To read and render PDF pages
+library(magick)    # To manipulate images
+library(knitr)     # To include images in the HTML
 
-# Spécifie le chemin vers ton fichier PDF
+# Specify the path to your PDF file
 pdf_file <- "/Users/CAMILLE/Desktop/Fungi_Bacteria/Significant_ANOVA_mix.pdf"
 
-# Convertir la première page en image raster (matrice)
+# Convert the first page to a raster image (matrix)
 page1_raster <- pdf_render_page(pdf_file, page = 1, dpi = 150)
 
-# Convertir la matrice raster en objet magick
+# Convert the raster matrix to a magick object
 page1_image <- image_read(page1_raster)
 
-# Enregistrer l'image temporairement
+# Save the image temporarily
 image_path <- "page1_image.png"
 image_write(page1_image, path = image_path, format = "png")
 
-# Inclure l'image dans le document HTML
+# Include the image in the HTML document
 include_graphics(image_path)
 ```
 
@@ -903,15 +905,14 @@ correlogram <- ggplot(correlation_data, aes(x = Plant_Parameter, y = Soil_Parame
 # Save correlogram to a file
 ggsave("Correlogram_plant_vs_soil.pdf", plot = correlogram, width = 10, height = 8)
 ```
-
 ```{r,echo=FALSE}
 library(pdftools)
 
 # Path to the uploaded PDF (replace with the correct file path)
-pdf_path <- "/Users/CAMILLE/Desktop/Fungi_Bacteria/Correlogram_plant_vs_soil.pdf"
+pdf_path <- "Correlogram_plant_vs_soil.pdf"
 
 # Convert the PDF to a large PNG for embedding
-png_file <- "correlogram_plant_vs_soil_large.png"
+png_file <- "Correlogram_plant_vs_soil_large.png"
 pdf_convert(pdf_path, format = "png", pages = 1, dpi = 300, filenames = png_file)
 
 # Display the image with increased width
@@ -1296,14 +1297,35 @@ ggplot(df_numeric, aes(x = Plant_P, y = UE)) +
 
 ```
 
-<br> <br> <br>
+<br>
 
-### 7. Discussion. From your objectives.
+### Discussion. From your objectives
+The primary objective of this project was to analyze the potential
+synergy between arbuscular mycorrhizal fungi (AMF) and plant
+growth-promoting rhizobacteria (PGPR) on nutrient uptake, plant
+growth, and soil quality,  
+as described in the chosen article "Cooperation between arbuscular
+mycorrhizal fungi and plant growth-promoting bacteria and their
+effects on plant growth and soil quality."
+We approached this hypothesis through a series of statistical and
+multivariate analyses, including ANOVA, PCA (Principal Component
+Analysis), LDA (Linear Discriminant Analysis), and correlation
+analyses.
 
-Better results on plant-roots growth for synergy effects of AMF & PGPB.
 
-### 8. Conclusions.
 
-Overall, knowledgeable work, but laborious !
 
-.........................................
+### Conclusion
+Through statistical and multivariate analyses, this project supported
+the hypothesis that the combined application of AMF and PGPR enhances
+plant growth and soil quality more effectively than individual
+treatments: Significant variations observed in plant traits and soil
+parameters confirmed that AMF and PGPR, when applied together,
+exhibit synergistic effects.PCA and LDA analyses highlighted
+relationships between plant performance and soil quality, identifying
+key drivers such as phosphorus uptake, urease activity, and specific
+root length (SRL). Correlations between variables, including
+nonlinear trends, underscored the complexity of interactions in
+plant-soil systems and focus attention on the need for multivariate
+approaches to understand these dynamics fully.
+
