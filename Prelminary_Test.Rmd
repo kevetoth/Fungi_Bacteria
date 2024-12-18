@@ -1,5 +1,5 @@
 ---
-title: "Preliminary_results.Rmd"
+title: ""
 authors Group A : "Keve Toth ; Jakov Cancar ; Camille Delabaere"
 date: "2024-12-01"
 output: 
@@ -26,11 +26,9 @@ h1, h2, h3 {
 }
 </style>
 
-PCA Analysis
-
 <div class="section">
 
-## Title : Preliminary results of [Cooperation between arbuscular mycorrhizal fungi and plant growth-promoting bacteria and their effects on plant growth and soil quality](https://peerj.com/articles/13080/)
+## Preliminary results of [Cooperation between arbuscular mycorrhizal fungi and plant growth-promoting bacteria and their effects on plant growth and soil quality](https://peerj.com/articles/13080/)
 
 ## Preamble :
 
@@ -84,9 +82,9 @@ kable(plant_soil, caption = "<span style='color: red; text-decoration: underline
 
 ```
 
-*Details - CK : No occulation, A : Occulation of AMF only, B : Occulation of Bacillus only, AB : Occulation of Bacillus & AMF*
+*Details - CK1 : Control, A2 : Inocculation with AMF only, B3 : Incculation with Bacillus only, AB5 : Incculation with Bacillus & AMF*
 
-### What have we done? And what did we use to do it? Step by step, so anyone could do it again by reading this part.
+### Analyitical Methods used
 
 Correlation analyses, ANOVA analyse, and some multivariate analyses were realized :
 
@@ -108,13 +106,15 @@ We plan to start with each variable analyses separately then ANOVA analyses we'l
 
 <br> <br>
 
-# Results. Figures and tables with captions and description of what do they mean. Our only work.
+# Results
 
 <br> <br>
 
-# <u>Corrected P values of ANOVA analysis of each variable</u>
+# <u>P values for each variable obtained by ANOVA analyisis, as well as Bonferroni corrected P values</u>
 
 ```{r,error=FALSE, echo=FALSE}
+library(DT)
+
 # Filter numeric variables for ANOVA
 response_vars <- colnames(plant_soil)[sapply(plant_soil, is.numeric) & colnames(plant_soil) != "Group"]
 # Initialize a dataframe to store ANOVA results
@@ -137,9 +137,10 @@ anova_results$Bonferroni_P <- p.adjust(anova_results$P_Value, method = "bonferro
 # Save ANOVA results to a CSV file
 write.csv(anova_results, "ANOVA_Results.csv", row.names = FALSE)
 
+library(knitr)
 
-# Display the results
-print(anova_results)
+# Display the results as a simple table
+kable(anova_results, caption = "ANOVA Results with Bonferroni Correction")
 
 ```
 
@@ -248,28 +249,18 @@ include_graphics(image_path)
 
 # <u>Showcasing all ANOVA analysis with significant difference between AMF treatment and AMF + PGPB treatments</u>
 
-```{r, error=FALSE, echo=FALSE}
-# Load necessary libraries
-library(ggplot2)
-library(dplyr)
+```{r, error=FALSE, echo=FALSE, fig.width=12, fig.height=12}
 
-# Assume `plant_soil` is your dataframe
-# Rename the grouping column for convenience (if not already done)
-colnames(plant_soil)[1] <- "Group"
+library(gridExtra)
 
-# Filter the dataframe to keep only rows with groups A2 and AB5
+# List to store plots
+plots <- list()
+
+# Filter the dataframe
 filtered_data <- plant_soil %>% filter(Group %in% c("A2", "AB5"))
 
-# Reorder the factor levels for the filtered groups
-filtered_data$Group <- factor(filtered_data$Group, levels = c("A2", "AB5"))
 
-# Get the names of all response variables (excluding the grouping column)
-response_vars <- colnames(filtered_data)[2:ncol(filtered_data)]  # Adjust as needed
-
-# Specify the PDF file name
-pdf("Significant_ANOVA_Fungivsbacteria.pdf")
-
-# Iterate over each response variable to perform ANOVA and plot
+# Iterate over response variables
 for (var in response_vars) {
   # Perform ANOVA
   formula <- as.formula(paste("`", var, "` ~ Group", sep = ""))
@@ -281,74 +272,43 @@ for (var in response_vars) {
   
   # Check if p-value is less than 0.05
   if (p_value < 0.05) {
+    # Calculate dynamic y-axis limits
+    y_min <- min(filtered_data[[var]], na.rm = TRUE)
+    y_max <- max(filtered_data[[var]], na.rm = TRUE)
+    y_buffer <- (y_max - y_min) * 0.1  # Add 10% buffer for annotation space
+    adjusted_y_max <- y_max + y_buffer
+    
     # Create the boxplot
-    p <- ggplot(filtered_data, aes_string(x = "Group", y = paste0("`", var, "`"), fill = "Group")) +
+   p <- ggplot(filtered_data, aes_string(x = "Group", y = paste0("`", var, "`"), fill = "Group")) +
       geom_boxplot() +
       theme_minimal() +
-      labs(title = paste("Significant Boxplot of", var, "Between A2 and AB5"),
+      labs(title = paste("ANOVA boxplot of", var, "for A2 and AB5"),
            x = "Group",
            y = var) +
-      annotate("text", x = 1.5, y = max(filtered_data[[var]], na.rm = TRUE), 
+      coord_cartesian(ylim = c(y_min, adjusted_y_max)) +
+            annotate("text", 
+               x = 1.5, 
+               y = adjusted_y_max - (y_buffer ),  # Moves the text lower
                label = paste("p =", signif(p_value, digits = 3)), 
-               hjust = 0, vjust = -0.5, size = 5, color = "red")
+               hjust = 0, 
+               vjust = -0.5, 
+               size = 5, 
+               color = "red")+
+     
+      theme(plot.title = element_text(size = 10))
     
-    # Print the plot (this writes it to the PDF)
-    print(p)
+    # Save plot to list
+    plots[[length(plots) + 1]] <- p
   }
 }
 
-# Close the PDF device
-dev.off()
-
-print("Plots saved to Significant_ANOVA_fungivsbacteria.pdf")
+# Arrange plots in a 2-column layout
+do.call(grid.arrange, c(plots, ncol = 2))
 
 
-```
 
-```{r, error=FALSE, echo=FALSE}
-# Load libraries
-library(ggplot2)
-library(gridExtra)
 
-# Replace with your data frame
-data <- data.frame(
-  Group = rep(c("A2", "AB5"), each = 10),
-  Total_Biomass = c(rnorm(10, mean = 4, sd = 0.5), rnorm(10, mean = 3.5, sd = 0.5)),
-  NO3_N = c(rnorm(10, mean = 100, sd = 10), rnorm(10, mean = 120, sd = 15)),
-  UE = c(rnorm(10, mean = 350, sd = 30), rnorm(10, mean = 380, sd = 20)),
-  EC = c(rnorm(10, mean = 250, sd = 20), rnorm(10, mean = 230, sd = 25)),
-  Plant_P = c(rnorm(10, mean = 0.03, sd = 0.005), rnorm(10, mean = 0.025, sd = 0.004))
-)
 
-# Define a function for boxplots
-generate_boxplot <- function(data, yvar, p_value, y_label) {
-  ggplot(data, aes(x = Group, y = .data[[yvar]], fill = Group)) +
-    geom_boxplot() +
-    labs(
-      title = paste(y_label, "(p =", p_value, ")"),
-      x = "Group",
-      y = y_label
-    ) +
-    theme_minimal() +
-    theme(
-      legend.position = "none",
-      plot.title = element_text(size = 12, face = "bold"),
-      axis.title = element_text(size = 12),
-      axis.text = element_text(size = 10)
-    )
-}
-
-# Render plots
-significant_plots <- list(
-  generate_boxplot(data, "Total_Biomass", 0.0157, "Total Biomass"),
-  generate_boxplot(data, "NO3_N", 0.0325, "NO3-N"),
-  generate_boxplot(data, "UE", 0.00134, "UE"),
-  generate_boxplot(data, "EC", 0.00244, "EC"),
-  generate_boxplot(data, "Plant_P", 0.00136, "Plant P")
-)
-
-# Display plots
-grid.arrange(grobs = significant_plots, ncol = 2)
 
 ```
 
@@ -366,17 +326,17 @@ Plant_param <- plant_soil[,c("Group","Aboveground_Biomass","Belowground_Biomass"
                              "SIZE","R/S_ratio", "HEIGHT","Plant_P", "Plant_N", 
                              "Plant_C", "SRL")]
 
-print(Plant_param)
+
 
 # Subset 2: Soil parameters (including 'Group' as the treatment column)
 Soil_param <- plant_soil[, c("Group", "NH4+-N", "NO3-N", "Total_N", "Total_C", 
                              "Available_P", "Total_P", "ALP", "UE", "EC", "PH")]
-print(Soil_param)
+
 
 
 ```
 
-```{r, error=FALSE, include=FALSE}
+```{r, error=FALSE, echo=FALSE, fig.width=12, fig.height=12}
 # 08_PCAsubsetted.R
 # Load necessary libraries
 if (!require(ggplot2)) install.packages("ggplot2")
@@ -411,22 +371,17 @@ scree_plant <- fviz_eig(pca_plant, addlabels = TRUE,
                         main = "Scree Plot for Plant Parameters", 
                         xlab = "Principal Components", 
                         ylab = "Variance Explained (%)")
-print(scree_plant)
+
+
 # Scree plot for Soil_param
 scree_soil <- fviz_eig(pca_soil, addlabels = TRUE, 
                        main = "Scree Plot for Soil Parameters", 
                        xlab = "Principal Components", 
                        ylab = "Variance Explained (%)")
-print(scree_soil)
-# Save scree plots to PDF
-ggsave("Scree_Plot_Plant_Param.pdf", plot = scree_plant, width = 8, height = 6)
-ggsave("Scree_Plot_Soil_Param.pdf", plot = scree_soil, width = 8, height = 6)
 
 
 
 
-
-# ggplot have to add % each pc is responsible for and ellipses when pulling getting error fix error
 
 
 pca_plantdf <- as.data.frame(pca_plant$x)  # Extract PCA scores
@@ -450,9 +405,6 @@ pca_plant_scatter <- ggplot(pca_plantdf, aes(x = PC1, y = PC2, color = Group)) +
   theme_minimal() +
   theme(legend.position = "right")
 
-# Save PCA Plant plot with smaller ellipses
-ggsave("PCA_Plant.pdf", plot = pca_plant_scatter, width = 8, height = 6)
-
 
 # Calculate percentage contribution for PC1 and PC2
 explained_variance <- summary(pca_plant)$importance[2, ] * 100
@@ -475,9 +427,6 @@ pca_soil_scatter <- ggplot(pca_soildf, aes(x = PC1, y = PC2, color = Group)) +
        y = pc2_label) +
   theme_minimal() +
   theme(legend.position = "right")
-
-# Save PCA Soil plot with smaller ellipses
-ggsave("PCA_Soil.pdf", plot = pca_soil_scatter, width = 8, height = 6)
 
 
 
@@ -511,8 +460,6 @@ pca_plant_arrows <- ggplot() +
        y = pc2_label_plant) +
   theme_minimal()
 
-# Save PCA arrows plot for Plant_param
-ggsave("PCA_Plant_loadings.pdf", plot = pca_plant_arrows, width = 8, height = 6)
 
 
 # Loadings for PCA of Soil_param
@@ -545,134 +492,27 @@ pca_soil_arrows <- ggplot() +
        y = pc2_label_soil) +
   theme_minimal()
 
-# Save PCA arrows plot for Soil_param
-ggsave("PCA_Soil_loadings.pdf", plot = pca_soil_arrows, width = 8, height = 6)
+library(gridExtra)
 
-
-
-
-# Extract the loadings for Plant_param PCA
-loadings_plant <- as.data.frame(pca_plant$rotation)
-
-# Create a dataframe for the first three PCs
-loadings_plantdf <- data.frame(
-  Variables = rownames(loadings_plant),
-  PC1 = loadings_plant[, 1],
-  PC2 = loadings_plant[, 2],
-  PC3 = loadings_plant[, 3]
+grid.arrange(
+  scree_plant, 
+  scree_soil, 
+  pca_plant_scatter, 
+  pca_soil_scatter, 
+  pca_plant_arrows, 
+  pca_soil_arrows, 
+  ncol = 2  # 3 columns, 2 rows
 )
 
-# Add absolute values for sorting
-loadings_plantdf <- loadings_plantdf %>%
-  mutate(Abs_PC1 = abs(PC1),
-         Abs_PC2 = abs(PC2),
-         Abs_PC3 = abs(PC3))
 
-# Sort by absolute values of PC1, PC2, or PC3
-sorted_loadings_plant <- loadings_plantdf %>%
-  arrange(desc(Abs_PC1))  # Change to Abs_PC2 or Abs_PC3 for other PCs
-
-# Print sorted loadings for Plant_param PCA
-print("Top contributing variables to PC1 (Plant_param):")
-print(sorted_loadings_plant)
-
-# Extract the loadings for Soil_param PCA
-loadings_soil <- as.data.frame(pca_soil$rotation)
-
-# Create a dataframe for the first three PCs
-loadings_soildf <- data.frame(
-  Variables = rownames(loadings_soil),
-  PC1 = loadings_soil[, 1],
-  PC2 = loadings_soil[, 2],
-  PC3 = loadings_soil[, 3]
-)
-
-# Add absolute values for sorting
-loadings_soildf <- loadings_soildf %>%
-  mutate(Abs_PC1 = abs(PC1),
-         Abs_PC2 = abs(PC2),
-         Abs_PC3 = abs(PC3))
-
-# Sort by absolute values of PC1, PC2, or PC3
-sorted_loadings_soil <- loadings_soildf %>%
-  arrange(desc(Abs_PC1))  # Change to Abs_PC2 or Abs_PC3 for other PCs
-
-# Print sorted loadings for Soil_param PCA
-print("Top contributing variables to PC1 (Soil_param):")
-print(sorted_loadings_soil)
-
-
-
-
-
-
-
-# Combine PCA data for plotting
-pca_combined <- data.frame(
-  Plant_PC1 = pca_plant$x[, 1],  # PC1 of Plant parameters
-  Soil_PC1 = pca_soil$x[, 1],    # PC1 of Soil parameters
-  Group = plant_soil$Group       # Group information (from the dataset)
-)
-
-pca_scatter <- ggplot(pca_combined, aes(x = Plant_PC1, y = Soil_PC1, color = Group)) +
-  geom_point(size = 3, alpha = 0.8) +  # Scatter points
-  geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +  # Horizontal line at 0
-  geom_vline(xintercept = 0, linetype = "dashed", color = "gray") +  # Vertical line at 0
-  stat_ellipse(type = "norm", geom = "polygon", alpha = 0.2, 
-               aes(fill = Group), level = 0.8, show.legend = FALSE) +  # Same fill as dots
-  labs(title = "PCA Scatter Plot: PC1 of Plant vs PC1 of Soil",
-       x = "Plant PC1",
-       y = "Soil PC1") +
-  theme_minimal() +
-  theme(legend.position = "right",
-        axis.text = element_text(size = 10),
-        axis.title = element_text(size = 12, face = "bold")) +
-  scale_color_brewer(palette = "Set2") +  # Adjust color palette if needed
-  scale_fill_brewer(palette = "Set2")  # Ensure the fill of the ellipse matches the color of the dots
-
-# Save the scatter plot to a PDF
-ggsave("PCA_Scatter_PlantPC1_vs_SoilPC1.pdf", plot = pca_scatter, width = 8, height = 6)
-
-
-
-
-```
-
-```{r render_pdf_as_image, error=FALSE, echo=FALSE}
-# Load required libraries
-library(pdftools)
-library(magick)
-library(knitr)
-library(here)
-
-# Define the path to your PDF file using `here`
-pdf_file <- here("PCA_Plant.pdf")
-
-# Verify the file exists
-if (!file.exists(pdf_file)) {
-  stop("File not found: ", pdf_file)
-}
-
-# Render the first page of the PDF to an image
-page1_raster <- pdf_render_page(pdf_file, page = 1, dpi = 150)
-
-# Convert the raster to a magick image
-page1_image <- image_read(page1_raster)
-
-# Save the image to the output folder as a PNG file
-output_dir <- here("output")
-dir.create(output_dir, showWarnings = FALSE)  # Create 'output' folder if missing
-image_path <- file.path(output_dir, "PCA_Plant_Page1.png")
-image_write(page1_image, path = image_path, format = "png")
-
-# Display the generated PNG file in the HTML document
-knitr::include_graphics(image_path)
 ```
 
 <br>
 <br>
 
-# <u>Scatter plot comparing Principle Component 1 of plant parameters to Principle Component 1 of soil parameters</u>
+
+
+# <u>Comparing PC1 of the Plant parameter analysis to PC1 of the Soil Parameter Analyisis<u>
 
 ```{r, error=FALSE, echo=FALSE}
 # Combine PCA data for plotting
@@ -697,166 +537,140 @@ pca_scatter <- ggplot(pca_combined, aes(x = Plant_PC1, y = Soil_PC1, color = Gro
         axis.title = element_text(size = 12, face = "bold")) +
   scale_color_brewer(palette = "Set2") +  # Adjust color palette if needed
   scale_fill_brewer(palette = "Set2")  # Ensure the fill of the ellipse matches the color of the dots
-
-# Save the scatter plot to a PDF
-ggsave("PCA_Scatter_PlantPC1_vs_SoilPC1.pdf", plot = pca_scatter, width = 8, height = 6)
-```
-
-```{r, echo=FALSE, message=FALSE, warning=FALSE, error=FALSE}
-# Load necessary libraries
-library(pdftools)
-library(knitr)
-
-# Convert the PDF to a PNG image
-pdf_path <- "PCA_Scatter_PlantPC1_vs_SoilPC1.pdf"
-png_path <- "PCA_Scatter_PlantPC1_vs_SoilPC1.png"
-pdf_convert(pdf_path, format = "png", filenames = png_path, dpi = 300)
-
-# Embed the PNG in the HTML document, displayed at full width
-include_graphics(png_path)
-```
-
-```{r, error=FALSE, echo=FALSE}
-# 15_LDAfunction.R 
-# Load necessary libraries
-library(MASS)
-library(ggplot2)
-
-# Define the LDA function with the update
-perform_lda <- function(data, group_col, threshold = 0.1, plot_title_prefix = "") {
-  # Standardize the data
-  data_std <- data
-  predictors <- setdiff(names(data), group_col)
-  data_std[, predictors] <- scale(data[, predictors])
-  data_std[[group_col]] <- as.factor(data_std[[group_col]])
-  
-  # Perform LDA
-  lda_model <- lda(as.formula(paste(group_col, "~ .")), data = data_std)
-  
-  # Predictions and LDA scores
-  predictions <- predict(lda_model)
-  data_std$LD1 <- predictions$x[, 1]
-  data_std$LD2 <- predictions$x[, 2]
-  
-  # Plot LDA results
-  lda_plot <- ggplot(data_std, aes(x = LD1, y = LD2, color = !!sym(group_col), fill = !!sym(group_col))) +
-    geom_point(size = 3) +
-    stat_ellipse(geom = "polygon", alpha = 0.3) +
-    labs(title = paste(plot_title_prefix, "LDA Plot"), x = "LD1", y = "LD2") +
-    theme_minimal() +
-    theme(legend.title = element_blank())
-  print(lda_plot)  # Print LDA plot to the R graphics device
-  
-  # Extract and filter variable importance
-  coefficients <- lda_model$scaling
-  coefficients_df <- data.frame(
-    Variable = rownames(coefficients),
-    LD1 = coefficients[, 1],
-    LD2 = coefficients[, 2],
-    Importance = rowSums(abs(coefficients))
-  )
-  
-  # Exclude LD1 and LD2 from the arrow plot
-  coefficients_filtered <- subset(coefficients_df, Variable != "LD1" & Variable != "LD2" & Importance > threshold)
-  
-  # Plot variable importance arrows
-  arrow_plot <- ggplot(coefficients_filtered, aes(x = 0, y = 0)) +
-    geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +  # Zero line for LD2
-    geom_vline(xintercept = 0, linetype = "dashed", color = "gray") +  # Zero line for LD1
-    geom_segment(aes(xend = LD1, yend = LD2), 
-                 arrow = arrow(type = "closed", length = unit(0.1, "inches")), 
-                 linewidth = 1) +  # Arrows for variables
-    geom_text(aes(x = LD1, y = LD2, label = Variable), color = "red", size = 3, hjust = 1.5, vjust = 1.5) +
-    labs(title = paste(plot_title_prefix, "LDA Arrows (Variables Only)"), x = "LD1", y = "LD2") +
-    theme_minimal() +
-    theme(axis.text = element_text(color = "black"), 
-          axis.title = element_text(size = 12),       
-          axis.ticks = element_line(color = "black"))
-  print(arrow_plot)  # Print arrow plot to the R graphics device
-  
-  return(list(lda_model = lda_model, predictions = predictions, lda_plot = lda_plot, arrow_plot = arrow_plot))
-}
-
+print(pca_scatter)
 
 ```
 
-```{r, error=FALSE, echo=FALSE}
-# Load necessary libraries
-library(MASS)
-library(ggplot2)
 
-# Define the LDA function with the update
-perform_lda <- function(data, group_col, threshold = 0.1, plot_title_prefix = "") {
-  # Standardize the data
-  data_std <- data
-  predictors <- setdiff(names(data), group_col)
-  data_std[, predictors] <- scale(data[, predictors])
-  data_std[[group_col]] <- as.factor(data_std[[group_col]])
-  
-  # Perform LDA
-  lda_model <- lda(as.formula(paste(group_col, "~ .")), data = data_std)
-  
-  # Predictions and LDA scores
-  predictions <- predict(lda_model)
-  data_std$LD1 <- predictions$x[, 1]
-  data_std$LD2 <- predictions$x[, 2]
-  
-  # Plot LDA results
-  lda_plot <- ggplot(data_std, aes(x = LD1, y = LD2, color = !!sym(group_col), fill = !!sym(group_col))) +
-    geom_point(size = 3) +
-    stat_ellipse(geom = "polygon", alpha = 0.3) +
-    labs(title = paste(plot_title_prefix, "LDA Plot"), x = "LD1", y = "LD2") +
-    theme_minimal() +
-    theme(legend.title = element_blank())
-  print(lda_plot)  # Print LDA plot to the R graphics device
-  
-  # Extract and filter variable importance
-  coefficients <- lda_model$scaling
-  coefficients_df <- data.frame(
-    Variable = rownames(coefficients),
-    LD1 = coefficients[, 1],
-    LD2 = coefficients[, 2],
-    Importance = rowSums(abs(coefficients))
-  )
-  
-  # Exclude LD1 and LD2 from the arrow plot
-  coefficients_filtered <- subset(coefficients_df, Variable != "LD1" & Variable != "LD2" & Importance > threshold)
-  
-  # Plot variable importance arrows
-  arrow_plot <- ggplot(coefficients_filtered, aes(x = 0, y = 0)) +
-    geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +  # Zero line for LD2
-    geom_vline(xintercept = 0, linetype = "dashed", color = "gray") +  # Zero line for LD1
-    geom_segment(aes(xend = LD1, yend = LD2), 
-                 arrow = arrow(type = "closed", length = unit(0.1, "inches")), 
-                 linewidth = 1) +  # Arrows for variables
-    geom_text(aes(x = LD1, y = LD2, label = Variable), color = "red", size = 3, hjust = 1.5, vjust = 1.5) +
-    labs(title = paste(plot_title_prefix, "LDA Arrows (Variables Only)"), x = "LD1", y = "LD2") +
-    theme_minimal() +
-    theme(axis.text = element_text(color = "black"), 
-          axis.title = element_text(size = 12),       
-          axis.ticks = element_line(color = "black"))
-  print(arrow_plot)  # Print arrow plot to the R graphics device
-  
-  return(list(lda_model = lda_model, predictions = predictions, lda_plot = lda_plot, arrow_plot = arrow_plot))
-}
-
-
-```
-
-# PCA Analysis (for the Soil, Plant, Soil_Loadings, Plant_Loadings)
-
-<iframe src="PCA_Plant.pdf" width="600" height="510"></iframe>
-
-<iframe src="PCA_Plant_loadings.pdf" width="600" height="500"></iframe>
-
-<iframe src="PCA_Soil.pdf" width="600" height="510"></iframe>
-
-<iframe src="PCA_Soil_loadings.pdf" width="600" height="510"></iframe>
-
-
-# <u>Linear Discriminant Analysis of all the variables</u>
 
 ```{r, echo=FALSE, error=FALSE}
+# Load necessary libraries
+library(MASS)
+library(ggplot2)
+
+# Define the LDA function with the update
+perform_lda <- function(data, group_col, threshold = 0.1, plot_title_prefix = "") {
+  # Standardize the data
+  data_std <- data
+  predictors <- setdiff(names(data), group_col)
+  data_std[, predictors] <- scale(data[, predictors])
+  data_std[[group_col]] <- as.factor(data_std[[group_col]])
+  
+  # Perform LDA
+  lda_model <- lda(as.formula(paste(group_col, "~ .")), data = data_std)
+  
+  # Predictions and LDA scores
+  predictions <- predict(lda_model)
+  data_std$LD1 <- predictions$x[, 1]
+  data_std$LD2 <- predictions$x[, 2]
+  
+  # Plot LDA results
+  lda_plot <- ggplot(data_std, aes(x = LD1, y = LD2, color = !!sym(group_col), fill = !!sym(group_col))) +
+    geom_point(size = 3) +
+    stat_ellipse(geom = "polygon", alpha = 0.3) +
+    labs(title = paste(plot_title_prefix, "LDA Plot"), x = "LD1", y = "LD2") +
+    theme_minimal() +
+    theme(legend.title = element_blank())
+  print(lda_plot)  # Print LDA plot to the R graphics device
+  
+  # Extract and filter variable importance
+  coefficients <- lda_model$scaling
+  coefficients_df <- data.frame(
+    Variable = rownames(coefficients),
+    LD1 = coefficients[, 1],
+    LD2 = coefficients[, 2],
+    Importance = rowSums(abs(coefficients))
+  )
+  
+  # Exclude LD1 and LD2 from the arrow plot
+  coefficients_filtered <- subset(coefficients_df, Variable != "LD1" & Variable != "LD2" & Importance > threshold)
+  
+  # Plot variable importance arrows
+  arrow_plot <- ggplot(coefficients_filtered, aes(x = 0, y = 0)) +
+    geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +  # Zero line for LD2
+    geom_vline(xintercept = 0, linetype = "dashed", color = "gray") +  # Zero line for LD1
+    geom_segment(aes(xend = LD1, yend = LD2), 
+                 arrow = arrow(type = "closed", length = unit(0.1, "inches")), 
+                 linewidth = 1) +  # Arrows for variables
+    geom_text(aes(x = LD1, y = LD2, label = Variable), color = "red", size = 3, hjust = 1.5, vjust = 1.5) +
+    labs(title = paste(plot_title_prefix, "LDA contribution of variables"), x = "LD1", y = "LD2") +
+    theme_minimal() +
+    theme(axis.text = element_text(color = "black"), 
+          axis.title = element_text(size = 12),       
+          axis.ticks = element_line(color = "black"))
+  print(arrow_plot)  # Print arrow plot to the R graphics device
+  
+  return(list(lda_model = lda_model, predictions = predictions, lda_plot = lda_plot, arrow_plot = arrow_plot))
+}
+
+
+```
+<br>
+<br>
+
+
+
+# <u>LDA Analyisis including all variables <u>
+```{r, echo=FALSE, error=FALSE}
+# Load necessary libraries
+library(MASS)
+library(ggplot2)
+
+# Define the LDA function with the update
+perform_lda <- function(data, group_col, threshold = 0.1, plot_title_prefix = "") {
+  # Standardize the data
+  data_std <- data
+  predictors <- setdiff(names(data), group_col)
+  data_std[, predictors] <- scale(data[, predictors])
+  data_std[[group_col]] <- as.factor(data_std[[group_col]])
+  
+  # Perform LDA
+  lda_model <- lda(as.formula(paste(group_col, "~ .")), data = data_std)
+  
+  # Predictions and LDA scores
+  predictions <- predict(lda_model)
+  data_std$LD1 <- predictions$x[, 1]
+  data_std$LD2 <- predictions$x[, 2]
+  
+  # Plot LDA results
+  lda_plot <- ggplot(data_std, aes(x = LD1, y = LD2, color = !!sym(group_col), fill = !!sym(group_col))) +
+    geom_point(size = 3) +
+    stat_ellipse(geom = "polygon", alpha = 0.3) +
+    labs(title = paste(plot_title_prefix, "LDA Plot"), x = "LD1", y = "LD2") +
+    theme_minimal() +
+    theme(legend.title = element_blank())
+  print(lda_plot)  # Print LDA plot to the R graphics device
+  
+  # Extract and filter variable importance
+  coefficients <- lda_model$scaling
+  coefficients_df <- data.frame(
+    Variable = rownames(coefficients),
+    LD1 = coefficients[, 1],
+    LD2 = coefficients[, 2],
+    Importance = rowSums(abs(coefficients))
+  )
+  
+  # Exclude LD1 and LD2 from the arrow plot
+  coefficients_filtered <- subset(coefficients_df, Variable != "LD1" & Variable != "LD2" & Importance > threshold)
+  
+  # Plot variable importance arrows
+  arrow_plot <- ggplot(coefficients_filtered, aes(x = 0, y = 0)) +
+    geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +  # Zero line for LD2
+    geom_vline(xintercept = 0, linetype = "dashed", color = "gray") +  # Zero line for LD1
+    geom_segment(aes(xend = LD1, yend = LD2), 
+                 arrow = arrow(type = "closed", length = unit(0.1, "inches")), 
+                 linewidth = 1) +  # Arrows for variables
+    geom_text(aes(x = LD1, y = LD2, label = Variable), color = "red", size = 3, hjust = 1.5, vjust = 1.5) +
+    labs(title = paste(plot_title_prefix, "LDA contribution of variables"), x = "LD1", y = "LD2") +
+    theme_minimal() +
+    theme(axis.text = element_text(color = "black"), 
+          axis.title = element_text(size = 12),       
+          axis.ticks = element_line(color = "black"))
+  print(arrow_plot)  # Print arrow plot to the R graphics device
+  
+  return(list(lda_model = lda_model, predictions = predictions, lda_plot = lda_plot, arrow_plot = arrow_plot))
+}
+
 big_LDA <- perform_lda(plant_soil, "Group", threshold = 0.1, plot_title_prefix = "All variables measured")
 
 # Save the plots from the object `big_LDA`
@@ -866,9 +680,68 @@ ggsave("Big_LDA_Arrows.pdf", plot = big_LDA$arrow_plot, width = 8, height = 6)
 
 <br> <br> 
 
-# <u>Linear Discriminant Analysis of plant parameters and Linear Discriminant Analysis of soil parameters</u>
+# <u>Linear Discriminant Analysis of Plant Parameters and Soil Parameters separately</u>
 
 ```{r, error=FALSE, echo=FALSE}
+
+# Load necessary libraries
+library(MASS)
+library(ggplot2)
+
+# Define the LDA function with the update
+perform_lda <- function(data, group_col, threshold = 0.1, plot_title_prefix = "") {
+  # Standardize the data
+  data_std <- data
+  predictors <- setdiff(names(data), group_col)
+  data_std[, predictors] <- scale(data[, predictors])
+  data_std[[group_col]] <- as.factor(data_std[[group_col]])
+  
+  # Perform LDA
+  lda_model <- lda(as.formula(paste(group_col, "~ .")), data = data_std)
+  
+  # Predictions and LDA scores
+  predictions <- predict(lda_model)
+  data_std$LD1 <- predictions$x[, 1]
+  data_std$LD2 <- predictions$x[, 2]
+  
+  # Plot LDA results
+  lda_plot <- ggplot(data_std, aes(x = LD1, y = LD2, color = !!sym(group_col), fill = !!sym(group_col))) +
+    geom_point(size = 3) +
+    stat_ellipse(geom = "polygon", alpha = 0.3) +
+    labs(title = paste(plot_title_prefix, "LDA Plot"), x = "LD1", y = "LD2") +
+    theme_minimal() +
+    theme(legend.title = element_blank())
+  print(lda_plot)  # Print LDA plot to the R graphics device
+  
+  # Extract and filter variable importance
+  coefficients <- lda_model$scaling
+  coefficients_df <- data.frame(
+    Variable = rownames(coefficients),
+    LD1 = coefficients[, 1],
+    LD2 = coefficients[, 2],
+    Importance = rowSums(abs(coefficients))
+  )
+  
+  # Exclude LD1 and LD2 from the arrow plot
+  coefficients_filtered <- subset(coefficients_df, Variable != "LD1" & Variable != "LD2" & Importance > threshold)
+  
+  # Plot variable importance arrows
+  arrow_plot <- ggplot(coefficients_filtered, aes(x = 0, y = 0)) +
+    geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +  # Zero line for LD2
+    geom_vline(xintercept = 0, linetype = "dashed", color = "gray") +  # Zero line for LD1
+    geom_segment(aes(xend = LD1, yend = LD2), 
+                 arrow = arrow(type = "closed", length = unit(0.1, "inches")), 
+                 linewidth = 1) +  # Arrows for variables
+    geom_text(aes(x = LD1, y = LD2, label = Variable), color = "red", size = 3, hjust = 1.5, vjust = 1.5) +
+    labs(title = paste(plot_title_prefix, "LDA contribution of variables"), x = "LD1", y = "LD2") +
+    theme_minimal() +
+    theme(axis.text = element_text(color = "black"), 
+          axis.title = element_text(size = 12),       
+          axis.ticks = element_line(color = "black"))
+  print(arrow_plot)  # Print arrow plot to the R graphics device
+  
+  return(list(lda_model = lda_model, predictions = predictions, lda_plot = lda_plot, arrow_plot = arrow_plot))
+}
 # Perform LDA for Plant Parameters
 plant_lda_results <- perform_lda(Plant_param, "Group", threshold = 0.1, plot_title_prefix = "Plant Parameters")
 ggsave("Plant_LDA_Plot.pdf", plot = plant_lda_results$lda_plot, width = 8, height = 6)
@@ -879,15 +752,6 @@ soil_lda_results <- perform_lda(Soil_param, "Group", threshold = 0.1, plot_title
 ggsave("Soil_LDA_Plot.pdf", plot = soil_lda_results$lda_plot, width = 8, height = 6)
 ggsave("Soil_LDA_Arrows.pdf", plot = soil_lda_results$arrow_plot, width = 8, height = 6)
 
-# Evaluate Performance for Plant Parameters
-plant_confusion <- table(Actual = Plant_param$Group, Predicted = plant_lda_results$predictions$class)
-plant_accuracy <- sum(diag(plant_confusion)) / sum(plant_confusion)
-cat("Plant LDA Accuracy:", plant_accuracy, "\n")
-
-# Evaluate Performance for Soil Parameters
-soil_confusion <- table(Actual = Soil_param$Group, Predicted = soil_lda_results$predictions$class)
-soil_accuracy <- sum(diag(soil_confusion)) / sum(soil_confusion)
-cat("Soil LDA Accuracy:", soil_accuracy, "\n")
 
 ```
 
@@ -899,9 +763,6 @@ cat("Soil LDA Accuracy:", soil_accuracy, "\n")
 # Load necessary libraries
 if (!require(ggplot2)) install.packages("ggplot2")
 library(ggplot2)
-library(pdftools)
-library(here)
-library(knitr)
 
 # Example: Assuming Plant_param and Soil_param data are already loaded
 # Calculate correlation matrix
@@ -924,30 +785,14 @@ correlogram <- ggplot(correlation_data, aes(x = Plant_Parameter, y = Soil_Parame
   labs(title = "Correlogram: Plant vs. Soil Parameters",
        x = "Plant Parameters",
        y = "Soil Parameters")
-
-# Save the correlogram to a file in the output directory
-output_dir <- here("output")
-dir.create(output_dir, showWarnings = FALSE)  # Ensure 'output' folder exists
-ggsave(here(output_dir, "Correlogram_plant_vs_soil.pdf"), plot = correlogram, width = 10, height = 8)
-
-# Define path to the saved PDF (using `here()` for dynamic path resolution)
-pdf_path <- here(output_dir, "Correlogram_plant_vs_soil.pdf")
-
-# Convert the PDF to a large PNG for embedding
-png_file <- here(output_dir, "correlogram_plant_vs_soil_large.png")
-
-# Convert the first page of the PDF to PNG
-pdf_convert(pdf_path, format = "png", pages = 1, dpi = 300, filenames = png_file)
-
-# Display the PNG image in the HTML document
-knitr::include_graphics(png_file)
+print(correlogram)
 
 ```
 
 
 <br><br>
 
-# <u>Graph of 1 Correlogram of specific root length correlation to plant parameters and 1 different correlogram for specific root length to soil parameters</u>
+# <u>Correlogramms showing the correlation Specific Root Length (SRL) has with plant and soil parameters separately</u>
 
 ```{r, error=FALSE, warning=FALSE, echo=FALSE}
 # Load required libraries
@@ -1008,268 +853,152 @@ print(plot2)
 
 ```
 
-```{r setup, error=FALSE, echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
-knitr::opts_chunk$set(echo = TRUE)
-library(ggplot2)
-library(reshape2)
-library(corrplot)
-library(dplyr)
-
-#Correlation with plant parameters
-# Simulate data 
-set.seed(123)
-plant_params <- data.frame(
-  SRL = rnorm(10),
-  Above_Biomass = rnorm(10),
-  Below_Biomass = rnorm(10),
-  Height = rnorm(10),
-  Plant_C = rnorm(10),
-  Plant_N = rnorm(10),
-  Plant_P = rnorm(10),
-  RS_Ratio = rnorm(10),
-  Root_Avg_Diameter = rnorm(10),
-  Root_Branches = rnorm(10),
-  Root_Length = rnorm(10),
-  Root_Surface_Area = rnorm(10),
-  RVolume = rnorm(10),
-  Size = rnorm(10),
-  Total_Biomass = rnorm(10)
-)
-
-# Calculate the correlation matrix
-cor_plant <- cor(plant_params, use = "complete.obs")
-
-# Plot the correlogram with circles
-corrplot(cor_plant, method = "circle", title = "Correlation: SRL vs Plant Parameters",
-         mar = c(2, 2, 2, 2), tl.col = "black", tl.cex = 0.8, cl.cex = 0.8, is.corr = TRUE)
-
-
-#correlation with soil parameters
-# Simulate data 
-soil_params <- data.frame(
-  SRL = rnorm(10),
-  ALP = rnorm(10),
-  Available_P = rnorm(10),
-  EC = rnorm(10),
-  NH4_N = rnorm(10),
-  NO3_N = rnorm(10),
-  PH = rnorm(10),
-  Total_C = rnorm(10),
-  Total_N = rnorm(10),
-  Total_P = rnorm(10),
-  UE = rnorm(10)
-)
-
-# Calculate the correlation matrix
-cor_soil <- cor(soil_params, use = "complete.obs")
-
-# Plot the correlogram with circles
-corrplot(cor_soil, method = "circle", title = "Correlation: SRL vs Soil Parameters",
-         mar = c(2, 2, 2, 2), tl.col = "black", tl.cex = 0.8, cl.cex = 0.8, is.corr = TRUE)
-
-
-```
 
 <br> <br> <br>
 
 # <u>Some notable correlations</u> 
 
-```{r, error=FALSE, echo=FALSE, message=FALSE, warning=FALSE, out.width='100%'}
+```{r, error=FALSE, echo=FALSE, message=FALSE, warning=FALSE, fig.width=12, fig.height=24 }
 
 # First plot: Correlation between Root Length and Aboveground Biomass
 subset_data <- plant_soil[, c("RootLength", "Aboveground_Biomass", "Group")]
-
-# Fit a linear model to get the R-squared value
 model <- lm(Aboveground_Biomass ~ RootLength, data = subset_data)
 r_squared <- summary(model)$r.squared
 
-# Scatter plot with color based on Group
 library(ggplot2)
-ggplot(subset_data, aes(x = RootLength, y = Aboveground_Biomass, color = Group)) +
-  geom_point(alpha = 0.6, size = 2) + # Scatter plot
-  geom_smooth(method = "lm", color = "red", se = FALSE) + # Linear regression line
+p1 <- ggplot(subset_data, aes(x = RootLength, y = Aboveground_Biomass, color = Group)) +
+  geom_point(alpha = 0.6, size = 2) + 
+  geom_smooth(method = "lm", color = "red", se = FALSE) + 
   annotate("text", x = min(subset_data$RootLength, na.rm = TRUE), 
            y = max(subset_data$Aboveground_Biomass, na.rm = TRUE), 
            label = paste("R² =", round(r_squared, 3)),
-           hjust = 0, vjust = 1, size = 5, color = "black") + # R-squared annotation
+           hjust = 0, vjust = 1, size = 5, color = "black") + 
   labs(title = "Correlation between Root Length and Aboveground Biomass",
        x = "Root Length", y = "Aboveground Biomass") + 
   theme_minimal()
 
-
 # Second plot: Correlation between SRL and Aboveground Biomass
 subset_data <- plant_soil[, c("SRL", "Aboveground_Biomass", "Group")]
-
-# Fit a linear model to get the R-squared value
 model <- lm(Aboveground_Biomass ~ SRL, data = subset_data)
 r_squared <- summary(model)$r.squared
 
-# Scatter plot with color based on Group
-ggplot(subset_data, aes(x = SRL, y = Aboveground_Biomass, color = Group)) +
-  geom_point(alpha = 0.6, size = 2) + # Scatter plot
-  geom_smooth(method = "lm", color = "red", se = FALSE) + # Linear regression line
+p2 <- ggplot(subset_data, aes(x = SRL, y = Aboveground_Biomass, color = Group)) +
+  geom_point(alpha = 0.6, size = 2) + 
+  geom_smooth(method = "lm", color = "red", se = FALSE) + 
   annotate("text", x = min(subset_data$SRL, na.rm = TRUE), 
            y = max(subset_data$Aboveground_Biomass, na.rm = TRUE), 
            label = paste("R² =", round(r_squared, 3)),
-           hjust = 0, vjust = 1, size = 5, color = "black") + # R-squared annotation
+           hjust = 0, vjust = 1, size = 5, color = "black") + 
   labs(title = "Correlation between SRL and Aboveground Biomass",
        x = "Specific Root Length (SRL)", y = "Aboveground Biomass") + 
   theme_minimal()
 
-
 # Third plot: Correlation between Plant_P and SRL
 subset_data <- plant_soil[, c("Plant_P", "SRL", "Group")]
-
-# Fit a linear model to get the R-squared value
 model <- lm(SRL ~ Plant_P, data = subset_data)
 r_squared <- summary(model)$r.squared
 
-# Scatter plot with color based on Group
-ggplot(subset_data, aes(x = Plant_P, y = SRL, color = Group)) +
-  geom_point(alpha = 0.6, size = 2) + # Scatter plot
-  geom_smooth(method = "lm", color = "red", se = FALSE) + # Linear regression line
+p3 <- ggplot(subset_data, aes(x = Plant_P, y = SRL, color = Group)) +
+  geom_point(alpha = 0.6, size = 2) + 
+  geom_smooth(method = "lm", color = "red", se = FALSE) + 
   annotate("text", x = min(subset_data$Plant_P, na.rm = TRUE), 
            y = max(subset_data$SRL, na.rm = TRUE), 
            label = paste("R² =", round(r_squared, 3)),
-           hjust = 0, vjust = 1, size = 5, color = "black") + # R-squared annotation
+           hjust = 0, vjust = 1, size = 5, color = "black") + 
   labs(title = "Correlation between Plant_P and SRL",
        x = "Plant P", y = "SRL") + 
   theme_minimal()
 
-
 # Fourth plot: Correlation between Plant_P and Root Length
 subset_data <- plant_soil[, c("Plant_P", "RootLength", "Group")]
-
-# Fit a linear model to get the R-squared value
 model <- lm(Plant_P ~ RootLength, data = subset_data)
 r_squared <- summary(model)$r.squared
 
-# Scatter plot with color based on Group
-ggplot(subset_data, aes(x = RootLength, y = Plant_P, color = Group)) +
-  geom_point(alpha = 0.6, size = 2) + # Scatter plot
-  geom_smooth(method = "lm", color = "red", se = FALSE) + # Linear regression line
+p4 <- ggplot(subset_data, aes(x = RootLength, y = Plant_P, color = Group)) +
+  geom_point(alpha = 0.6, size = 2) + 
+  geom_smooth(method = "lm", color = "red", se = FALSE) + 
   annotate("text", x = min(subset_data$RootLength, na.rm = TRUE), 
            y = max(subset_data$Plant_P, na.rm = TRUE), 
            label = paste("R² =", round(r_squared, 3)),
-           hjust = 0, vjust = 1, size = 5, color = "black") + # R-squared annotation
+           hjust = 0, vjust = 1, size = 5, color = "black") + 
   labs(title = "Correlation between Plant_P and Root Length",
        x = "Root Length", y = "Plant P") + 
   theme_minimal()
 
-
-
-
-
-# Subset the relevant columns
+# Fifth plot: Correlation between Total Biomass and Plant P
 subset_data <- plant_soil[, c("Total_Biomass", "Plant_P", "Group")]
-
-# Fit a linear model to get the R-squared value
 model <- lm(Plant_P ~ Total_Biomass, data = subset_data)
 r_squared <- summary(model)$r.squared
 
-# Create the scatter plot with a linear model, color by Group, and annotate the R-squared value
-library(ggplot2)
-ggplot(subset_data, aes(x = Total_Biomass, y = Plant_P, color = Group)) +
-  geom_point(alpha = 0.6, size = 2) + # Scatter plot with color by Group
-  geom_smooth(method = "lm", color = "red", se = FALSE) + # Linear regression line
+p5 <- ggplot(subset_data, aes(x = Total_Biomass, y = Plant_P, color = Group)) +
+  geom_point(alpha = 0.6, size = 2) + 
+  geom_smooth(method = "lm", color = "red", se = FALSE) + 
   annotate("text", x = min(subset_data$Total_Biomass, na.rm = TRUE), 
            y = max(subset_data$Plant_P, na.rm = TRUE), 
            label = paste("R² =", round(r_squared, 3)),
-           hjust = 0, vjust = 1, size = 5, color = "black") + # R-squared annotation
+           hjust = 0, vjust = 1, size = 5, color = "black") + 
   labs(title = "Correlation between Total Biomass and Plant P",
-       x = "Total Biomass", y = "Plant P") + # Axis labels
+       x = "Total Biomass", y = "Plant P") + 
   theme_minimal()
 
-
-
-# Subset the relevant columns and filter for Group A2 and AB5
+# Sixth plot: Correlation between Total Biomass and Plant P (for Group A2 & AB5)
 subset_data <- plant_soil[plant_soil$Group %in% c("A2", "AB5"), c("Total_Biomass", "Plant_P", "Group")]
-
-# Fit a linear model to get the R-squared value
 model <- lm(Plant_P ~ Total_Biomass, data = subset_data)
 r_squared <- summary(model)$r.squared
 
-# Create the scatter plot with a linear model, color by Group, and annotate the R-squared value
-library(ggplot2)
-ggplot(subset_data, aes(x = Total_Biomass, y = Plant_P, color = Group)) +
-  geom_point(alpha = 0.6, size = 2) + # Scatter plot with color by Group
-  geom_smooth(method = "lm", color = "red", se = FALSE) + # Linear regression line
+p6 <- ggplot(subset_data, aes(x = Total_Biomass, y = Plant_P, color = Group)) +
+  geom_point(alpha = 0.6, size = 2) + 
+  geom_smooth(method = "lm", color = "red", se = FALSE) + 
   annotate("text", x = min(subset_data$Total_Biomass, na.rm = TRUE), 
            y = max(subset_data$Plant_P, na.rm = TRUE), 
            label = paste("R² =", round(r_squared, 3)),
-           hjust = 0, vjust = 1, size = 5, color = "black") + # R-squared annotation
+           hjust = 0, vjust = 1, size = 5, color = "black") + 
   labs(title = "Correlation between Total Biomass and Plant P (A2 & AB5)",
-       x = "Total Biomass", y = "Plant P") + # Axis labels
+       x = "Total Biomass", y = "Plant P") + 
   theme_minimal()
 
-
-
-
-
-# Subset the relevant columns
+# Seventh plot: Correlation between Root Branches and Aboveground Biomass
 subset_data <- plant_soil[, c("Rootbranches", "Aboveground_Biomass", "Group")]
-
-# Fit a linear model to get the R-squared value
 model <- lm(Aboveground_Biomass ~ Rootbranches, data = subset_data)
 r_squared <- summary(model)$r.squared
 
-# Create the scatter plot with a linear model, color by Group, and annotate the R-squared value
-library(ggplot2)
-ggplot(subset_data, aes(x = Rootbranches, y = Aboveground_Biomass, color = Group)) +
-  geom_point(alpha = 0.6, size = 2) + # Scatter plot with color by Group
-  geom_smooth(method = "lm", color = "red", se = FALSE) + # Linear regression line
+p7 <- ggplot(subset_data, aes(x = Rootbranches, y = Aboveground_Biomass, color = Group)) +
+  geom_point(alpha = 0.6, size = 2) + 
+  geom_smooth(method = "lm", color = "red", se = FALSE) + 
   annotate("text", x = min(subset_data$Rootbranches, na.rm = TRUE), 
            y = max(subset_data$Aboveground_Biomass, na.rm = TRUE), 
            label = paste("R² =", round(r_squared, 3)),
-           hjust = 0, vjust = 1, size = 5, color = "black") + # R-squared annotation
+           hjust = 0, vjust = 1, size = 5, color = "black") + 
   labs(title = "Correlation between Root Branches and Aboveground Biomass",
-       x = "Root Branches", y = "Aboveground Biomass") + # Axis labels
+       x = "Root Branches", y = "Aboveground Biomass") + 
   theme_minimal()
 
-
-# Subset the relevant columns
+# Eighth plot: Correlation between Root Branches and Plant P
 subset_data <- plant_soil[, c("Rootbranches", "Plant_P", "Group")]
-
-# Fit a linear model to get the R-squared value
 model <- lm(Plant_P ~ Rootbranches, data = subset_data)
 r_squared <- summary(model)$r.squared
 
-# Create the scatter plot with a linear model, color by Group, and annotate the R-squared value
-library(ggplot2)
-ggplot(subset_data, aes(x = Rootbranches, y = Plant_P, color = Group)) +
-  geom_point(alpha = 0.6, size = 2) + # Scatter plot with color by Group
-  geom_smooth(method = "lm", color = "red", se = FALSE) + # Linear regression line
+p8 <- ggplot(subset_data, aes(x = Rootbranches, y = Plant_P, color = Group)) +
+  geom_point(alpha = 0.6, size = 2) + 
+  geom_smooth(method = "lm", color = "red", se = FALSE) + 
   annotate("text", x = min(subset_data$Rootbranches, na.rm = TRUE), 
            y = max(subset_data$Plant_P, na.rm = TRUE), 
            label = paste("R² =", round(r_squared, 3)),
-           hjust = 0, vjust = 1, size = 5, color = "black") + # R-squared annotation
+           hjust = 0, vjust = 1, size = 5, color = "black") + 
   labs(title = "Correlation between Root Branches and Plant P",
-       x = "Root Branches", y = "Plant P") + # Axis labels
+       x = "Root Branches", y = "Plant P") + 
   theme_minimal()
 
+# Arrange the 8 plots in 2 columns and 4 rows
+library(gridExtra)
+grid.arrange(p1, p2, p3, p4, p5, p6, p7, p8, ncol=2)
 
-# PCA Scatter Plot: Multiple Graphs
-
-# Load necessary libraries
-library(pdftools)
-library(knitr)
-
-# Path to the PDF file
-pdf_path <- "PCA_Scatter_PlantPC1_vs_SoilPC1.pdf"
-
-# Convert each page of the PDF to a PNG image
-png_files <- pdf_convert(pdf_path, format = "png", dpi = 300)
-
-# Loop through the PNG files and display each image
-for (png in png_files) {
-  cat(sprintf('![](%s)\n\n', png)) # Markdown syntax to include images
-}
 ```
-*Non linear correlation of urease (UE) and plant phosophorus (Plant_P)*
+
 
 <br> <br> <br>
 
-# <u>Urease VS Plant Phosphorus relation<u>
+# <u>Urease and Plant Phosphorus non-linear relation<u>
 ```{r, error=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
 # Load required libraries
 library(ggplot2)
@@ -1318,136 +1047,46 @@ ggplot(df_numeric, aes(x = Plant_P, y = UE)) +
 
 <br> <br> <br>
 
-### 7. Discussion. From your objectives.
+### 7. Discussion. 
 
-Better results on plant-roots growth for synergy effects of AMF & PGPB.
+The primary objective of this project was to analyze the potential synergy between arbuscular mycorrhizal fungi (AMF) and plant growth-promoting rhizobacteria (PGPR) on nutrient uptake, plant growth, and soil quality, as described in the chosen article "Cooperation between arbuscular mycorrhizal fungi and plant growth-promoting bacteria and their effects on plant growth and soil quality." We approached this hypothesis through a series of statistical and multivariate analyses, including ANOVA, PCA (Principal Component Analysis), LDA (Linear Discriminant Analysis), and correlation analyses.
+
+1. ANOVA Analysis and Boxplots
+
+We started by analyzing individual variables using ANOVA to determine where significant variations occurred among treatments (AMF, PGPR, and their combination).
+
+The ANOVA results revealed significant differences in certain plant and soil traits when comparing treatments. Boxplots helped visualize where these variations occurred, particularly for treatments involving both AMF and PGPR, suggesting potential synergy.
+
+Bonferroni corrections were applied to ensure statistical robustness, which confirmed that some results remained significant after controlling for multiple comparisons.
+
+2. Multivariate Analyses (PCA and LDA)
+
+To explore relationships across multiple variables simultaneously, we employed Principal Component Analysis (PCA):
+
+PCA on plant parameters and soil parameters separately allowed us to identify how each variable contributed to PC1 and PC2. Scatterplots and arrow plots revealed strong groupings and variable influences.
+
+A combined PCA analysis comparing PC1 of plant traits and PC1 of soil traits showed a meaningful relationship between soil quality and plant performance, supporting our hypothesis of a functional connection.
+
+We further used Linear Discriminant Analysis (LDA) to assess how well the measured variables discriminated between treatments:
+
+LDA scatterplots demonstrated clear group separations, with arrow plots highlighting the contribution strength of key variables to LD1 and LD2. These findings emphasized specific traits (e.g., root parameters, phosphorus content, and urease activity) as drivers of treatment differences.
+
+3. Correlation Analyses
+
+To explore interdependencies between traits, we conducted correlograms for plant characteristics and soil parameters, specific Root Length (SRL) correlations with plant and soil variables.
+
+These analyses revealed strong correlations, particularly highlighting SRL’s role as a key trait influencing both plant growth and soil quality. Additionally, nonlinear correlations, such as between urease activity (UE) and plant phosphorus, were identified, showcasing complex relationships that might not have been captured in linear models.
 
 ### 8. Conclusions.
 
-Overall, knowledgeable work, but laborious !
+Through statistical and multivariate analyses, this project supported the hypothesis that the combined application of AMF and PGPR enhances plant growth and soil quality more effectively than individual treatments:
+
+Significant variations observed in plant traits and soil parameters confirmed that AMF and PGPR, when applied together, exhibit synergistic effects.
+
+PCA and LDA analyses highlighted relationships between plant performance and soil quality, identifying key drivers such as phosphorus uptake, urease activity, and specific root length (SRL).
+
+Correlations between variables, including nonlinear trends, underscored the complexity of interactions in plant-soil systems and focus attention on the need for multivariate approaches to understand these dynamics fully.
 
 .........................................
 
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r, error=FALSE, echo=FALSE}
-# Load libraries for this chunk
-library(pdftools)  # For rendering PDF pages
-library(magick)    # For image manipulation
-library(knitr)     # For including images in HTML
-
-# Dynamically locate the PDF file in the main folder
-pdf_file <- here("Significant_ANOVA_mix.pdf")
-
-# Verify the file exists
-if (!file.exists(pdf_file)) {
-  stop("File not found: ", pdf_file)
-}
-
-# Render the first page of the PDF to a raster
-page1_raster <- pdf_render_page(pdf_file, page = 1, dpi = 150)
-
-# Convert the raster to an image
-page1_image <- image_read(page1_raster)
-
-# Save the image to the output folder
-output_dir <- here("output")
-dir.create(output_dir, showWarnings = FALSE)  # Create 'output' folder if missing
-image_path <- file.path(output_dir, "page1_image.png")
-image_write(page1_image, path = image_path, format = "png")
-
-# Include the image in the document
-include_graphics(image_path)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
-
-
-
-
-```{r, error=FALSE, echo=FALSE}
-
-# Load required libraries
-library(pdftools)
-library(magick)
-library(knitr)
-library(here)
-
-# Define the path to your PDF file using `here`
-pdf_file <- here("PCA_Plant.pdf")
-
-# Verify the file exists
-if (!file.exists(pdf_file)) {
-  stop("File not found: ", pdf_file)
-}
-
-# Render the first page of the PDF to an image
-page1_raster <- pdf_render_page(pdf_file, page = 1, dpi = 150)
-
-# Convert the raster to a magick image
-page1_image <- image_read(page1_raster)
-
-# Save the image to the output folder as a PNG file
-output_dir <- here("output")
-dir.create(output_dir, showWarnings = FALSE)  # Create 'output' folder if missing
-image_path <- file.path(output_dir, "PCA_Plant_Page1.png")
-image_write(page1_image, path = image_path, format = "png")
-
-# Display the generated PNG file in the HTML document
-knitr::include_graphics(image_path)
-
-```
-
-
-```{r, error=FALSE, echo=FALSE}
-# Load necessary libraries
-if (!require(ggplot2)) install.packages("ggplot2")
-library(ggplot2)
-library(pdftools)
-library(here)
-library(knitr)
-
-# Example: Assuming Plant_param and Soil_param data are already loaded
-# Calculate correlation matrix
-correlation_matrix <- cor(Plant_param[, -1], Soil_param[, -1], use = "pairwise.complete.obs")
-
-# Convert the correlation matrix to a long format
-correlation_data <- as.data.frame(as.table(correlation_matrix))
-colnames(correlation_data) <- c("Plant_Parameter", "Soil_Parameter", "Correlation")
-
-# Create the correlogram plot with circles
-correlogram <- ggplot(correlation_data, aes(x = Plant_Parameter, y = Soil_Parameter)) +
-  geom_point(aes(size = abs(Correlation), color = Correlation)) +
-  scale_color_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0, 
-                        name = "Correlation") +
-  scale_size_continuous(range = c(2, 10), name = "Strength\nof Correlation") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1),
-        axis.text = element_text(size = 10),
-        axis.title = element_text(size = 12, face = "bold")) +
-  labs(title = "Correlogram: Plant vs. Soil Parameters",
-       x = "Plant Parameters",
-       y = "Soil Parameters")
-
-# Save the correlogram to a file in the output directory
-output_dir <- here("output")
-dir.create(output_dir, showWarnings = FALSE)  # Ensure 'output' folder exists
-ggsave(here(output_dir, "Correlogram_plant_vs_soil.pdf"), plot = correlogram, width = 10, height = 8)
-
-# Define path to the saved PDF (using `here()` for dynamic path resolution)
-pdf_path <- here(output_dir, "Correlogram_plant_vs_soil.pdf")
-
-# Convert the PDF to a large PNG for embedding
-png_file <- here(output_dir, "correlogram_plant_vs_soil_large.png")
-
-# Convert the first page of the PDF to PNG
-pdf_convert(pdf_path, format = "png", pages = 1, dpi = 300, filenames = png_file)
-
-# Display the PNG image in the HTML document
-knitr::include_graphics(png_file)
-
-
-```

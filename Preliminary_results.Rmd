@@ -65,9 +65,17 @@ It comes from the scientific article [Cooperation between arbuscular mycorrhizal
 
 ```{r,include=FALSE, results="hide"}
 
-source("~/Desktop/Fungi_Bacteria/R/00_GetData.R") 
-print(plant_soil)
+# Load required libraries
+library(here)
 
+# Dynamically set the path to the script
+script_path <- here("R", "00_GetData.R")
+
+# Source the script
+source(script_path)
+
+# Print a sample data object to confirm
+print(plant_soil)
 ```
 
 ```{r display_tbl_kable, echo=FALSE}
@@ -210,6 +218,7 @@ print("Significant_ANOVA_mix.pdf")
 ```
 
 ```{r, echo=FALSE}
+<<<<<<< Updated upstream
 # Load the libraries
 library(pdftools)  # To read and render PDF pages
 library(magick)    # To manipulate images
@@ -229,6 +238,34 @@ image_path <- "page1_image.png"
 image_write(page1_image, path = image_path, format = "png")
 
 # Include the image in the HTML document
+=======
+# Load libraries for this chunk
+library(pdftools)  # For rendering PDF pages
+library(magick)    # For image manipulation
+library(knitr)     # For including images in HTML
+
+# Dynamically locate the PDF file in the main folder
+pdf_file <- here("Significant_ANOVA_mix.pdf")
+
+# Verify the file exists
+if (!file.exists(pdf_file)) {
+  stop("File not found: ", pdf_file)
+}
+
+# Render the first page of the PDF to a raster
+page1_raster <- pdf_render_page(pdf_file, page = 1, dpi = 150)
+
+# Convert the raster to an image
+page1_image <- image_read(page1_raster)
+
+# Save the image to the output folder
+output_dir <- here("output")
+dir.create(output_dir, showWarnings = FALSE)  # Create 'output' folder if missing
+image_path <- file.path(output_dir, "page1_image.png")
+image_write(page1_image, path = image_path, format = "png")
+
+# Include the image in the document
+>>>>>>> Stashed changes
 include_graphics(image_path)
 ```
 
@@ -627,14 +664,19 @@ ggsave("PCA_Scatter_PlantPC1_vs_SoilPC1.pdf", plot = pca_scatter, width = 8, hei
 ```
 
 ```{r render_pdf_as_image, echo=FALSE}
-# PCA_Plant
 # Load required libraries
 library(pdftools)
 library(magick)
 library(knitr)
+library(here)
 
-# Define the path to your PDF file
-pdf_file <- "/Users/CAMILLE/Desktop/Fungi_Bacteria/PCA_Plant.pdf"
+# Define the path to your PDF file using `here`
+pdf_file <- here("PCA_Plant.pdf")
+
+# Verify the file exists
+if (!file.exists(pdf_file)) {
+  stop("File not found: ", pdf_file)
+}
 
 # Render the first page of the PDF to an image
 page1_raster <- pdf_render_page(pdf_file, page = 1, dpi = 150)
@@ -642,12 +684,14 @@ page1_raster <- pdf_render_page(pdf_file, page = 1, dpi = 150)
 # Convert the raster to a magick image
 page1_image <- image_read(page1_raster)
 
-# Save the image as a PNG file
-image_path <- "PCA_Plant_Page1.png"
+# Save the image to the output folder as a PNG file
+output_dir <- here("output")
+dir.create(output_dir, showWarnings = FALSE)  # Create 'output' folder if missing
+image_path <- file.path(output_dir, "PCA_Plant_Page1.png")
 image_write(page1_image, path = image_path, format = "png")
 
 # Display the generated PNG file in the HTML document
-knitr::include_graphics("PCA_Plant_Page1.png")
+knitr::include_graphics(image_path)
 ```
 
 <br>
@@ -880,15 +924,19 @@ cat("Soil LDA Accuracy:", soil_accuracy, "\n")
 # Load necessary libraries
 if (!require(ggplot2)) install.packages("ggplot2")
 library(ggplot2)
+library(pdftools)
+library(here)
+library(knitr)
 
+# Example: Assuming Plant_param and Soil_param data are already loaded
 # Calculate correlation matrix
-correlation_matrix <- cor(Plant_param[ , -1], Soil_param[ , -1], use = "pairwise.complete.obs")
+correlation_matrix <- cor(Plant_param[, -1], Soil_param[, -1], use = "pairwise.complete.obs")
 
 # Convert the correlation matrix to a long format
 correlation_data <- as.data.frame(as.table(correlation_matrix))
 colnames(correlation_data) <- c("Plant_Parameter", "Soil_Parameter", "Correlation")
 
-# Correlogram with circles
+# Create the correlogram plot with circles
 correlogram <- ggplot(correlation_data, aes(x = Plant_Parameter, y = Soil_Parameter)) +
   geom_point(aes(size = abs(Correlation), color = Correlation)) +
   scale_color_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0, 
@@ -902,12 +950,28 @@ correlogram <- ggplot(correlation_data, aes(x = Plant_Parameter, y = Soil_Parame
        x = "Plant Parameters",
        y = "Soil Parameters")
 
-# Save correlogram to a file
-ggsave("Correlogram_plant_vs_soil.pdf", plot = correlogram, width = 10, height = 8)
+# Save the correlogram to a file in the output directory
+output_dir <- here("output")
+dir.create(output_dir, showWarnings = FALSE)  # Ensure 'output' folder exists
+ggsave(here(output_dir, "Correlogram_plant_vs_soil.pdf"), plot = correlogram, width = 10, height = 8)
+
+# Define path to the saved PDF (using `here()` for dynamic path resolution)
+pdf_path <- here(output_dir, "Correlogram_plant_vs_soil.pdf")
+
+# Convert the PDF to a large PNG for embedding
+png_file <- here(output_dir, "correlogram_plant_vs_soil_large.png")
+
+# Convert the first page of the PDF to PNG
+pdf_convert(pdf_path, format = "png", pages = 1, dpi = 300, filenames = png_file)
+
+# Display the PNG image in the HTML document
+knitr::include_graphics(png_file)
+
 ```
 ```{r,echo=FALSE}
 library(pdftools)
 
+<<<<<<< Updated upstream
 # Path to the uploaded PDF (replace with the correct file path)
 pdf_path <- "Correlogram_plant_vs_soil.pdf"
 
@@ -917,6 +981,8 @@ pdf_convert(pdf_path, format = "png", pages = 1, dpi = 300, filenames = png_file
 
 # Display the image with increased width
 knitr::include_graphics(png_file)
+=======
+>>>>>>> Stashed changes
 
 ```
 
