@@ -695,7 +695,6 @@ pdf_convert(pdf_path, format = "png", filenames = png_path, dpi = 300)
 include_graphics(png_path)
 ```
 
-
 ```{r, echo=FALSE}
 # 15_LDAfunction.R 
 # Load necessary libraries
@@ -823,7 +822,16 @@ perform_lda <- function(data, group_col, threshold = 0.1, plot_title_prefix = ""
 
 ```
 
-<br> 
+# PCA Analysis (for the Soil, Plant, Soil_Loadings, Plant_Loadings)
+
+<iframe src="PCA_Plant.pdf" width="600" height="510"></iframe>
+
+<iframe src="PCA_Plant_loadings.pdf" width="600" height="500"></iframe>
+
+<iframe src="PCA_Soil.pdf" width="600" height="510"></iframe>
+
+<iframe src="PCA_Soil_loadings.pdf" width="600" height="510"></iframe>
+
 
 # <u>Linear Discriminant Analysis of all the variables</u>
 
