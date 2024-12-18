@@ -1,9 +1,9 @@
 ---
 title: "Preliminary_results.Rmd"
-authors Group A : "Keve Toth ; Jakov Cancar ; Camille Delabaere"
+authors Group A: Keve Toth ; Jakov Cancar ; Camille Delabaere
 date: "2024-12-01"
-output: 
-  html_document
+output:
+  html_document: default
 ---
 <style>
 /* Add space between sections */
@@ -29,7 +29,7 @@ h1, h2, h3 {
 PCA Analysis
 
 <div class="section">
-    
+
 
 ## Title : Preliminary results of [Cooperation between arbuscular mycorrhizal fungi and plant growth-promoting bacteria and their effects on plant growth and soil quality](https://peerj.com/articles/13080/)
 
