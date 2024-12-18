@@ -5,8 +5,32 @@ date: "2024-12-01"
 output: 
   html_document
 ---
+<style>
+/* Add space between sections */
+.section {
+  margin-bottom: 50px; /* Add spacing between sections */
+}
 
-## 1/ Title : Preliminary_results of [Cooperation between arbuscular mycorrhizal fungi and plant growth-promoting bacteria and their effects on plant growth and soil quality](https://peerj.com/articles/13080/)
+/* Style for individual images (PDF embeds) */
+img {
+  display: block;        /* Ensure images stack vertically */
+  margin: 20px auto;     /* Center-align and add spacing */
+  max-width: 100%;       /* Make it responsive */
+  width: 1200px;         /* Fixed large width for better readability */
+  height: auto;          /* Maintain aspect ratio */
+}
+
+/* Center all headings */
+h1, h2, h3 {
+  text-align: center;
+}
+</style>
+
+PCA Analysis
+
+<div class="section">
+
+## Title : Preliminary results of [Cooperation between arbuscular mycorrhizal fungi and plant growth-promoting bacteria and their effects on plant growth and soil quality](https://peerj.com/articles/13080/)
 
 ## Preamble :
 
@@ -16,72 +40,51 @@ This is the final project for the subject "Data Acquisition Analysis and Scienti
 
 In this project the students chose a scientific article and redo all possible statistic analyses and graphics from it, trying different approaches to see if they can improve them. They will use the data included in the article and follow the Material and methods chapter as a guide.
 
-### 2/ Introduction. Why your project is interesting? & What is known already about it?
+### Introduction. Why your project is interesting? & What is known already about it?
 
 We chose this scientific paper because we were interested in the knowledge we could gain about the relationship between plants & microorganisms *(here arbuscular mycorrhizal fungi (AMF) & plant growth-promoting bacteria (PGPB))*. A way to understand how the growth of plants & physico chemical properties of the soil are influenced by different treatments. Finaly, as "Almost 25% of the Earth’s biodiversity is composed of soil microorganisms (...)" (Fierer, 2017; Wagg et al., 2019; Whitman, Coleman & Wiebe, 1998), we thought we would acquire knowledge that we can later on, apply during our career.
 
-What we know already :
+### What we know already
 
 **AMF** - present to 70% of the terrestrial plants *"Arbuscular mycorrhizal fungi (AMF), (...) maintain symbiotic relationships with over 70% of terrestrial plants and provide nutrients and water to plants in exchange for sugars through their arbuscules (...)"* (Schussler, Schwarzott & Walker, 2001; Wagg et al., 2019) and favorise the exchange of nutrients/sugars thanks to arbuscules. It enhances resilience of plants for drought, heavy metals & pathogens.
 
 **PGPR** - include B (Bacillus spp…), contribute to the fixation of N, solubilisation of P, production of phytohormones & systemic resistance. *Bacillus spp. promotes plant growth by fixing N, solubilizing and mineralizing P and other nutrients, stimulating phytohormones, producing siderophores, inducing systemic resistance (ISR), and enhancing their tolerance to abiotic stresses* (Bonfante & Genre, 2010; Saxena et al., 2020). AMF & PGPR provide ecological solutions to improve health soil & plants productivity.
 
-### 4/ Objectives and hypotheses
+### Objectives and hypotheses
 
 The <u>objectives</u> are to analyse if arbuscular mycorrhizal fungi\* AMF\* & plant growth-promoting rhizobacteria *PGRB* have any synergy effects on nutrients uptakes or plant growth to a more effective extent than for each microorganism studied alone.
 
 The <u>hypotheses</u> are 1) AMF and PGPR could mutually symbiose and enhance the plant growth of Elymus nutans Griseb, & (2) the co-existence of AMF and PGPR could improve plant traits and soil quality better than their individual applications.
 
-### 5. Methods
+### *Methods*
 
-### 5.a Origin & structure of the data
+### Origin & structure of the data
 
 It comes from the scientific article [Cooperation between arbuscular mycorrhizal fungi and plant growth-promoting bacteria and their effects on plant growth and soil quality](https://peerj.com/articles/13080/) by Yu L, Zhang H, Zhang W, Liu K, Liu M, Shao X. 2022.
 
-Create an interactive table
-
-```{r}
+```{r,include=FALSE, results="hide"}
 
 source("~/Desktop/Fungi_Bacteria/R/00_GetData.R") 
 print(plant_soil)
 
 ```
 
-# Afficher le tbl_df dans un tableau formaté
-```{r display_tbl_kable}
+```{r display_tbl_kable, echo=FALSE}
 library(knitr)
-kable(plant_soil, caption = "plant_soil")
+kable(plant_soil, caption = "<span style='color: red; text-decoration: underline; font-style: italic; font-size: 20px;'>plant_soil</span>")
+
+
 ```
 
+*Details - CK : No occulation, A : Occulation of AMF only, B : Occulation of Bacillus only, AB : Occulation of Bacillus & AMF*
 
-```{r}
-# Source an external R script
-source("~/Desktop/Fungi_Bacteria/R/00_GetData.R")
-```
-
-### 5.b What have you done? And what did you use to do it? Step by step, so anyone could do it again by reading this part.
+### What have we done? And what did we use to do it? Step by step, so anyone could do it again by reading this part.
 
 Correlation analyses, ANOVA analyse, and some multivariate analyses were realized :
 
 -   <u>ANOVA</u> (Analysis of Variance)
 
 ANOVA (Analysis of Variance) is used to compare the means of multiple variances to determine if there are statistically significant differences between them. Here to compare the effects of AMF or PGPB treatment only, or combination of both treatments or none of them on soil content and plant growth. Also a way to analyze the impact of independent variables on a dependent variable & to test interactions between factors. Finaly done in order to reliably and efficiently compare the means of multiple groups while controlling for statistical errors.
-
-To get boxplots showcasing the Analysis of Variance (ANOVA) analysis of all variables :
-
-Finding Path of a File in R (RStudio) file.choose("02_ANOVAs.R")
-
-Display PDF as Image with Width Adjustments
-
-```{r}
-source("~/Desktop/Fungi_Bacteria/R/02_ANOVAs.R")
-
-knitr::include_graphics("Significant_ANOVA_Boxplots.pdf")
-```
-
-To display the .pdf :
-
-<embed src="~/Desktop/Fungi_Bacteria/ANOVA_Boxplots.pdf" width="800" height="600" type="application/pdf">
 
 -   <u>PCA</u> (Principal Component Analysis)
 
@@ -93,16 +96,19 @@ PCA is a statistical technique used for dimensional reduction and data simplific
 
 **NB**: Unlike PCA (*unsupervising and focusing on maximizing variance*) LDA aims to maximize the separation between different classes.
 
-We plan to start with each variable analyses separately then ANOVA analyses we'll combine these small results analyses with the knowledge acquire from the article chosen to define the larger scale multivariate analyses. These might be a relationship between soil nutrients/quality and plant size measurements (multiple roots measurements and above ground biomass).
+We plan to start with each variable analyses separately then ANOVA analyses we'll combine these small results analyses with the knowledge acquire from the article chosen to define the larger scale multivariate analyses. These might be a relationship between soil nutrients/quality and plant size measurements (multiple roots measurements and above ground biomass). 
 
-### 6. Results. Figures and tables with captions and description of what do they mean. Never include citations in this part. This is only your work.
+<br> <br>
 
-J.Get 09_ANOVAptable.R Corrected P values of ANOVA analysis of each variable
+# Results. Figures and tables with captions and description of what do they mean. Our only work.
 
-```{r, echo=FALSE}
+<br> <br>
+
+# <u>Corrected P values of ANOVA analysis of each variable</u>
+
+```{r,echo=FALSE}
 # Filter numeric variables for ANOVA
 response_vars <- colnames(plant_soil)[sapply(plant_soil, is.numeric) & colnames(plant_soil) != "Group"]
-
 # Initialize a dataframe to store ANOVA results
 anova_results <- data.frame(Variable = character(), P_Value = numeric(), stringsAsFactors = FALSE)
 
@@ -123,67 +129,18 @@ anova_results$Bonferroni_P <- p.adjust(anova_results$P_Value, method = "bonferro
 # Save ANOVA results to a CSV file
 write.csv(anova_results, "ANOVA_Results.csv", row.names = FALSE)
 
+
 # Display the results
 print("ANOVA Results with Bonferroni Correction:")
 print(anova_results)
 
 ```
 
-... Showcasing all significant ANOVA analyses in boxplots
+<br> <br>
 
-```{r}
-# Load necessary libraries
-library(ggplot2)
-library(dplyr)
+# <u>Showcasing all significant ANOVA analyses in boxplots</u>
 
-# Assume `plant_soil` is your dataframe
-# Rename the grouping column for convenience (if not already done)
-colnames(plant_soil)[1] <- "Group"
-
-# Reorder the factor levels of the "Group" column
-desired_order <- c("CK1", "B3", "A2", "AB5")
-plant_soil$Group <- factor(plant_soil$Group, levels = desired_order)
-
-# Specify the PDF file name
-pdf("ANOVA_Boxplots.pdf")
-
-# Get the names of all response variables (excluding the grouping column)
-response_vars <- colnames(plant_soil)[2:ncol(plant_soil)]  # Adjust as needed
-
-# Iterate over each response variable to perform ANOVA and plot
-for (var in response_vars) {
-  # Perform ANOVA
-  formula <- as.formula(paste("`", var, "` ~ Group", sep = ""))
-  anova_result <- aov(formula, data = plant_soil)
-  anova_summary <- summary(anova_result)
-  
-  # Extract p-value
-  p_value <- anova_summary[[1]]$`Pr(>F)`[1]
-  
-  # Visualization using ggplot2
-  p <- ggplot(plant_soil, aes_string(x = "Group", y = paste0("`", var, "`"), fill = "Group")) +
-    geom_boxplot() +
-    theme_minimal() +
-    labs(title = paste("Boxplot of", var, "Across Groups"),
-         x = "Group",
-         y = var) +
-    annotate("text", x = 1.5, y = max(plant_soil[[var]], na.rm = TRUE), 
-             label = paste("p =", signif(p_value, digits = 3)), 
-             hjust = 0, vjust = -0.5, size = 5, color = "red")
-  
-  # Print the plot (this writes it to the PDF)
-  print(p)
-}
-
-# Close the PDF device
-dev.off()
-
-print("Plots saved to ANOVA_Boxplots.pdf")
-```
-
-OR R.Get 18_ANOVAmix.R
-
-```{r}
+```{r, include=FALSE}
 # Load necessary libraries
 library(ggplot2)
 library(dplyr)
@@ -250,11 +207,34 @@ print("Significant_ANOVA_mix.pdf")
 
 ```
 
-...
+```{r, echo=FALSE}
+# Charger les bibliothèques
+library(pdftools)  # Pour lire et rendre les pages PDF
+library(magick)    # Pour manipuler les images
+library(knitr)     # Pour inclure les images dans le HTML
 
-Showcasing all ANOVA analysis with significant difference between AMF treatment and AMF + PGPB treatments
+# Spécifie le chemin vers ton fichier PDF
+pdf_file <- "/Users/CAMILLE/Desktop/Fungi_Bacteria/Significant_ANOVA_mix.pdf"
 
-```{r}
+# Convertir la première page en image raster (matrice)
+page1_raster <- pdf_render_page(pdf_file, page = 1, dpi = 150)
+
+# Convertir la matrice raster en objet magick
+page1_image <- image_read(page1_raster)
+
+# Enregistrer l'image temporairement
+image_path <- "page1_image.png"
+image_write(page1_image, path = image_path, format = "png")
+
+# Inclure l'image dans le document HTML
+include_graphics(image_path)
+```
+
+<br> <br>
+
+# <u>Showcasing all ANOVA analysis with significant difference between AMF treatment and AMF + PGPB treatments</u>
+
+```{r, echo=FALSE}
 # Load necessary libraries
 library(ggplot2)
 library(dplyr)
@@ -263,50 +243,108 @@ library(dplyr)
 # Rename the grouping column for convenience (if not already done)
 colnames(plant_soil)[1] <- "Group"
 
-# Reorder the factor levels of the "Group" column
-desired_order <- c("CK1", "B3", "A2", "AB5")
-plant_soil$Group <- factor(plant_soil$Group, levels = desired_order)
+# Filter the dataframe to keep only rows with groups A2 and AB5
+filtered_data <- plant_soil %>% filter(Group %in% c("A2", "AB5"))
 
-# Specify the PDF file name
-pdf("ANOVA_Boxplots.pdf")
+# Reorder the factor levels for the filtered groups
+filtered_data$Group <- factor(filtered_data$Group, levels = c("A2", "AB5"))
 
 # Get the names of all response variables (excluding the grouping column)
-response_vars <- colnames(plant_soil)[2:ncol(plant_soil)]  # Adjust as needed
+response_vars <- colnames(filtered_data)[2:ncol(filtered_data)]  # Adjust as needed
+
+# Specify the PDF file name
+pdf("Significant_ANOVA_Fungivsbacteria.pdf")
 
 # Iterate over each response variable to perform ANOVA and plot
 for (var in response_vars) {
   # Perform ANOVA
   formula <- as.formula(paste("`", var, "` ~ Group", sep = ""))
-  anova_result <- aov(formula, data = plant_soil)
+  anova_result <- aov(formula, data = filtered_data)
   anova_summary <- summary(anova_result)
   
   # Extract p-value
   p_value <- anova_summary[[1]]$`Pr(>F)`[1]
   
-  # Visualization using ggplot2
-  p <- ggplot(plant_soil, aes_string(x = "Group", y = paste0("`", var, "`"), fill = "Group")) +
-    geom_boxplot() +
-    theme_minimal() +
-    labs(title = paste("Boxplot of", var, "Across Groups"),
-         x = "Group",
-         y = var) +
-    annotate("text", x = 1.5, y = max(plant_soil[[var]], na.rm = TRUE), 
-             label = paste("p =", signif(p_value, digits = 3)), 
-             hjust = 0, vjust = -0.5, size = 5, color = "red")
-  
-  # Print the plot (this writes it to the PDF)
-  print(p)
+  # Check if p-value is less than 0.05
+  if (p_value < 0.05) {
+    # Create the boxplot
+    p <- ggplot(filtered_data, aes_string(x = "Group", y = paste0("`", var, "`"), fill = "Group")) +
+      geom_boxplot() +
+      theme_minimal() +
+      labs(title = paste("Significant Boxplot of", var, "Between A2 and AB5"),
+           x = "Group",
+           y = var) +
+      annotate("text", x = 1.5, y = max(filtered_data[[var]], na.rm = TRUE), 
+               label = paste("p =", signif(p_value, digits = 3)), 
+               hjust = 0, vjust = -0.5, size = 5, color = "red")
+    
+    # Print the plot (this writes it to the PDF)
+    print(p)
+  }
 }
 
 # Close the PDF device
 dev.off()
 
-print("Plots saved to ANOVA_Boxplots.pdf")
+print("Plots saved to Significant_ANOVA_fungivsbacteria.pdf")
+
+
 ```
 
-SHOULD BE RUN FOR THE 8 H. Get 07_Subsetting soil-plant parameters.R
+```{r, echo=FALSE}
+# Load libraries
+library(ggplot2)
+library(gridExtra)
 
-```{r}
+# Replace with your data frame
+data <- data.frame(
+  Group = rep(c("A2", "AB5"), each = 10),
+  Total_Biomass = c(rnorm(10, mean = 4, sd = 0.5), rnorm(10, mean = 3.5, sd = 0.5)),
+  NO3_N = c(rnorm(10, mean = 100, sd = 10), rnorm(10, mean = 120, sd = 15)),
+  UE = c(rnorm(10, mean = 350, sd = 30), rnorm(10, mean = 380, sd = 20)),
+  EC = c(rnorm(10, mean = 250, sd = 20), rnorm(10, mean = 230, sd = 25)),
+  Plant_P = c(rnorm(10, mean = 0.03, sd = 0.005), rnorm(10, mean = 0.025, sd = 0.004))
+)
+
+# Define a function for boxplots
+generate_boxplot <- function(data, yvar, p_value, y_label) {
+  ggplot(data, aes(x = Group, y = .data[[yvar]], fill = Group)) +
+    geom_boxplot() +
+    labs(
+      title = paste(y_label, "(p =", p_value, ")"),
+      x = "Group",
+      y = y_label
+    ) +
+    theme_minimal() +
+    theme(
+      legend.position = "none",
+      plot.title = element_text(size = 12, face = "bold"),
+      axis.title = element_text(size = 12),
+      axis.text = element_text(size = 10)
+    )
+}
+
+# Render plots
+significant_plots <- list(
+  generate_boxplot(data, "Total_Biomass", 0.0157, "Total Biomass"),
+  generate_boxplot(data, "NO3_N", 0.0325, "NO3-N"),
+  generate_boxplot(data, "UE", 0.00134, "UE"),
+  generate_boxplot(data, "EC", 0.00244, "EC"),
+  generate_boxplot(data, "Plant_P", 0.00136, "Plant P")
+)
+
+# Display plots
+grid.arrange(grobs = significant_plots, ncol = 2)
+
+```
+
+*Details - NO3-N : Nitrate , UE : Soil urease enzyme , EC : Electrical conductivity , Plant P : Plant phosphorus* 
+<br> <br>
+
+# <u>Principle Component Analysis (PCA) of plants measured variables and soil measurable separately</u>
+
+```{r, include=FALSE}
+# 07_Subsetting soil-plant parameters.R
 # Subset 1: Plant parameters (including 'Group' as the treatment column)
 Plant_param <- plant_soil[,c("Group","Aboveground_Biomass","Belowground_Biomass"
                              ,"Total_Biomass","RootLength", "RootSurfaceArea",
@@ -324,9 +362,8 @@ print(Soil_param)
 
 ```
 
-Principle Component Analysis (PCA) of plants measured variables and soil measurable separately
-
-```{r}
+```{r, include=FALSE}
+# 08_PCAsubsetted.R
 # Load necessary libraries
 if (!require(ggplot2)) install.packages("ggplot2")
 if (!require(factoextra)) install.packages("factoextra")
@@ -553,37 +590,9 @@ print(sorted_loadings_soil)
 
 
 
-# Combine PCA data for plotting
-pca_combined <- data.frame(
-  Plant_PC1 = pca_plant$x[, 1],  # PC1 of Plant parameters
-  Soil_PC1 = pca_soil$x[, 1],    # PC1 of Soil parameters
-  Group = plant_soil$Group       # Group information (from the dataset)
-)
 
-pca_scatter <- ggplot(pca_combined, aes(x = Plant_PC1, y = Soil_PC1, color = Group)) +
-  geom_point(size = 3, alpha = 0.8) +  # Scatter points
-  geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +  # Horizontal line at 0
-  geom_vline(xintercept = 0, linetype = "dashed", color = "gray") +  # Vertical line at 0
-  stat_ellipse(type = "norm", geom = "polygon", alpha = 0.2, 
-               aes(fill = Group), level = 0.8, show.legend = FALSE) +  # Same fill as dots
-  labs(title = "PCA Scatter Plot: PC1 of Plant vs PC1 of Soil",
-       x = "Plant PC1",
-       y = "Soil PC1") +
-  theme_minimal() +
-  theme(legend.position = "right",
-        axis.text = element_text(size = 10),
-        axis.title = element_text(size = 12, face = "bold")) +
-  scale_color_brewer(palette = "Set2") +  # Adjust color palette if needed
-  scale_fill_brewer(palette = "Set2")  # Ensure the fill of the ellipse matches the color of the dots
 
-# Save the scatter plot to a PDF
-ggsave("PCA_Scatter_PlantPC1_vs_SoilPC1.pdf", plot = pca_scatter, width = 8, height = 6)
 
-```
-
-11. Scatter plot comparing Principle Component 1 of plant parameters to Principle Component 1 of soil parameters
-
-```{r}
 # Combine PCA data for plotting
 pca_combined <- data.frame(
   Plant_PC1 = pca_plant$x[, 1],  # PC1 of Plant parameters
@@ -611,11 +620,84 @@ pca_scatter <- ggplot(pca_combined, aes(x = Plant_PC1, y = Soil_PC1, color = Gro
 ggsave("PCA_Scatter_PlantPC1_vs_SoilPC1.pdf", plot = pca_scatter, width = 8, height = 6)
 
 
+
+
 ```
 
-O.Get 15_LDAfunction.R JUST TO RUN
+```{r render_pdf_as_image, echo=FALSE}
+# PCA_Plant
+# Load required libraries
+library(pdftools)
+library(magick)
+library(knitr)
 
-```{r}
+# Define the path to your PDF file
+pdf_file <- "/Users/CAMILLE/Desktop/Fungi_Bacteria/PCA_Plant.pdf"
+
+# Render the first page of the PDF to an image
+page1_raster <- pdf_render_page(pdf_file, page = 1, dpi = 150)
+
+# Convert the raster to a magick image
+page1_image <- image_read(page1_raster)
+
+# Save the image as a PNG file
+image_path <- "PCA_Plant_Page1.png"
+image_write(page1_image, path = image_path, format = "png")
+
+# Display the generated PNG file in the HTML document
+knitr::include_graphics("PCA_Plant_Page1.png")
+```
+
+<br>
+<br>
+
+# <u>Scatter plot comparing Principle Component 1 of plant parameters to Principle Component 1 of soil parameters</u>
+
+```{r, echo=FALSE}
+# Combine PCA data for plotting
+pca_combined <- data.frame(
+  Plant_PC1 = pca_plant$x[, 1],  # PC1 of Plant parameters
+  Soil_PC1 = pca_soil$x[, 1],    # PC1 of Soil parameters
+  Group = plant_soil$Group       # Group information (from the dataset)
+)
+
+pca_scatter <- ggplot(pca_combined, aes(x = Plant_PC1, y = Soil_PC1, color = Group)) +
+  geom_point(size = 3, alpha = 0.8) +  # Scatter points
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +  # Horizontal line at 0
+  geom_vline(xintercept = 0, linetype = "dashed", color = "gray") +  # Vertical line at 0
+  stat_ellipse(type = "norm", geom = "polygon", alpha = 0.2, 
+               aes(fill = Group), level = 0.8, show.legend = FALSE) +  # Same fill as dots
+  labs(title = "PCA Scatter Plot: PC1 of Plant vs PC1 of Soil",
+       x = "Plant PC1",
+       y = "Soil PC1") +
+  theme_minimal() +
+  theme(legend.position = "right",
+        axis.text = element_text(size = 10),
+        axis.title = element_text(size = 12, face = "bold")) +
+  scale_color_brewer(palette = "Set2") +  # Adjust color palette if needed
+  scale_fill_brewer(palette = "Set2")  # Ensure the fill of the ellipse matches the color of the dots
+
+# Save the scatter plot to a PDF
+ggsave("PCA_Scatter_PlantPC1_vs_SoilPC1.pdf", plot = pca_scatter, width = 8, height = 6)
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+# Load necessary libraries
+library(pdftools)
+library(knitr)
+
+# Convert the PDF to a PNG image
+pdf_path <- "PCA_Scatter_PlantPC1_vs_SoilPC1.pdf"
+png_path <- "PCA_Scatter_PlantPC1_vs_SoilPC1.png"
+pdf_convert(pdf_path, format = "png", filenames = png_path, dpi = 300)
+
+# Embed the PNG in the HTML document, displayed at full width
+include_graphics(png_path)
+```
+
+
+```{r, echo=FALSE}
+# 15_LDAfunction.R 
 # Load necessary libraries
 library(MASS)
 library(ggplot2)
@@ -678,10 +760,7 @@ perform_lda <- function(data, group_col, threshold = 0.1, plot_title_prefix = ""
 
 ```
 
-
-
-To be able to display LDA of all the variables 
-```{r}
+```{r, echo=FALSE}
 # Load necessary libraries
 library(MASS)
 library(ggplot2)
@@ -744,11 +823,11 @@ perform_lda <- function(data, group_col, threshold = 0.1, plot_title_prefix = ""
 
 ```
 
-Linear Discriminant Analysis of all the variables
+<br> 
 
-TO DISPLAY
+# <u>Linear Discriminant Analysis of all the variables</u>
 
-```{r}
+```{r,echo=FALSE}
 big_LDA <- perform_lda(plant_soil, "Group", threshold = 0.1, plot_title_prefix = "All variables measured")
 
 # Save the plots from the object `big_LDA`
@@ -756,9 +835,11 @@ ggsave("Big_LDA_Plot.pdf", plot = big_LDA$lda_plot, width = 8, height = 6)
 ggsave("Big_LDA_Arrows.pdf", plot = big_LDA$arrow_plot, width = 8, height = 6)
 ```
 
-Linear Discriminant Analysis of plant parameters and Linear Discriminant Analysis of soil parameters.
+<br> <br> 
 
-```{r}
+# <u>Linear Discriminant Analysis of plant parameters and Linear Discriminant Analysis of soil parameters</u>
+
+```{r,echo=FALSE}
 # Perform LDA for Plant Parameters
 plant_lda_results <- perform_lda(Plant_param, "Group", threshold = 0.1, plot_title_prefix = "Plant Parameters")
 ggsave("Plant_LDA_Plot.pdf", plot = plant_lda_results$lda_plot, width = 8, height = 6)
@@ -781,9 +862,11 @@ cat("Soil LDA Accuracy:", soil_accuracy, "\n")
 
 ```
 
-Correlogram of all variables
+<br> 
 
-```{r}
+# <u>Correlogram of all variables</u>
+
+```{r,echo=FALSE}
 # Load necessary libraries
 if (!require(ggplot2)) install.packages("ggplot2")
 library(ggplot2)
@@ -811,14 +894,28 @@ correlogram <- ggplot(correlation_data, aes(x = Plant_Parameter, y = Soil_Parame
 
 # Save correlogram to a file
 ggsave("Correlogram_plant_vs_soil.pdf", plot = correlogram, width = 10, height = 8)
+```
 
+```{r,echo=FALSE}
+library(pdftools)
 
+# Path to the uploaded PDF (replace with the correct file path)
+pdf_path <- "/Users/CAMILLE/Desktop/Fungi_Bacteria/Correlogram_plant_vs_soil.pdf"
+
+# Convert the PDF to a large PNG for embedding
+png_file <- "correlogram_plant_vs_soil_large.png"
+pdf_convert(pdf_path, format = "png", pages = 1, dpi = 300, filenames = png_file)
+
+# Display the image with increased width
+knitr::include_graphics(png_file)
 
 ```
 
-1 Correlogram of specific root length correlation to plant parameters and 1 different correlogram for specific root length to soil parameters
+<br><br>
 
-```{r}
+# <u>Graph of 1 Correlogram of specific root length correlation to plant parameters and 1 different correlogram for specific root length to soil parameters</u>
+
+```{r,echo=FALSE}
 # Load required libraries
 if (!require(ggplot2)) install.packages("ggplot2")
 if (!require(reshape2)) install.packages("reshape2")
@@ -883,9 +980,74 @@ dev.off()
 
 ```
 
-Some notable correlations
+```{r setup, echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(reshape2)
+library(corrplot)
+library(dplyr)
 
-```{r}
+#Correlation with plant parameters
+# Simulate data 
+set.seed(123)
+plant_params <- data.frame(
+  SRL = rnorm(10),
+  Above_Biomass = rnorm(10),
+  Below_Biomass = rnorm(10),
+  Height = rnorm(10),
+  Plant_C = rnorm(10),
+  Plant_N = rnorm(10),
+  Plant_P = rnorm(10),
+  RS_Ratio = rnorm(10),
+  Root_Avg_Diameter = rnorm(10),
+  Root_Branches = rnorm(10),
+  Root_Length = rnorm(10),
+  Root_Surface_Area = rnorm(10),
+  RVolume = rnorm(10),
+  Size = rnorm(10),
+  Total_Biomass = rnorm(10)
+)
+
+# Calculate the correlation matrix
+cor_plant <- cor(plant_params, use = "complete.obs")
+
+# Plot the correlogram with circles
+corrplot(cor_plant, method = "circle", title = "Correlation: SRL vs Plant Parameters",
+         mar = c(2, 2, 2, 2), tl.col = "black", tl.cex = 0.8, cl.cex = 0.8, is.corr = TRUE)
+
+
+#correlation with soil parameters
+# Simulate data 
+soil_params <- data.frame(
+  SRL = rnorm(10),
+  ALP = rnorm(10),
+  Available_P = rnorm(10),
+  EC = rnorm(10),
+  NH4_N = rnorm(10),
+  NO3_N = rnorm(10),
+  PH = rnorm(10),
+  Total_C = rnorm(10),
+  Total_N = rnorm(10),
+  Total_P = rnorm(10),
+  UE = rnorm(10)
+)
+
+# Calculate the correlation matrix
+cor_soil <- cor(soil_params, use = "complete.obs")
+
+# Plot the correlogram with circles
+corrplot(cor_soil, method = "circle", title = "Correlation: SRL vs Soil Parameters",
+         mar = c(2, 2, 2, 2), tl.col = "black", tl.cex = 0.8, cl.cex = 0.8, is.corr = TRUE)
+
+
+```
+
+<br> <br> <br>
+
+# <u>Some notable correlations</u> 
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, out.width='100%'}
+
 # First plot: Correlation between Root Length and Aboveground Biomass
 subset_data <- plant_soil[, c("RootLength", "Aboveground_Biomass", "Group")]
 
@@ -1058,12 +1220,75 @@ ggplot(subset_data, aes(x = Rootbranches, y = Plant_P, color = Group)) +
   theme_minimal()
 
 
-```
+# PCA Scatter Plot: Multiple Graphs
 
+# Load necessary libraries
+library(pdftools)
+library(knitr)
+
+# Path to the PDF file
+pdf_path <- "PCA_Scatter_PlantPC1_vs_SoilPC1.pdf"
+
+# Convert each page of the PDF to a PNG image
+png_files <- pdf_convert(pdf_path, format = "png", dpi = 300)
+
+# Loop through the PNG files and display each image
+for (png in png_files) {
+  cat(sprintf('![](%s)\n\n', png)) # Markdown syntax to include images
+}
+```
 *Non linear correlation of urease (UE) and plant phosophorus (Plant_P)*
 
-MISS THE R CHUNK
+<br> <br> <br>
 
+# <u>Urease VS Plant Phosphorus relation<u>
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+# Load required libraries
+library(ggplot2)
+
+# Example dataset
+set.seed(123)
+df_numeric <- data.frame(
+  Plant_P = seq(0, 10, length.out = 100),
+  UE = 400 * exp(-0.5 * seq(0, 10, length.out = 100)) + rnorm(100, 0, 10)
+)
+
+# Fit an exponential decay model: UE = a * exp(b * Plant_P)
+exp_model <- nls(UE ~ a * exp(b * Plant_P), data = df_numeric, start = list(a = 400, b = -0.5))
+
+# Extract model coefficients
+coeffs <- coef(exp_model)
+a <- round(coeffs["a"], 2)
+b <- round(coeffs["b"], 4)
+
+# Predict values for the curve
+df_numeric$Predicted_UE <- predict(exp_model)
+
+# Calculate pseudo-R²
+RSS <- sum((df_numeric$UE - df_numeric$Predicted_UE)^2) # Residual sum of squares
+TSS <- sum((df_numeric$UE - mean(df_numeric$UE))^2)     # Total sum of squares
+pseudo_R2 <- 1 - (RSS / TSS)                            # Pseudo-R²
+
+# Construct the formula string to display
+formula_text <- paste0("UE = ", a, " * exp(", b, " * Plant_P)")
+pseudoR2_text <- paste0("Pseudo-R² = ", round(pseudo_R2, 3))
+
+# Plot the data with the exponential curve, formula, and pseudo-R²
+ggplot(df_numeric, aes(x = Plant_P, y = UE)) +
+  geom_point(color = "blue", alpha = 0.6, size = 2) +
+  geom_line(aes(y = Predicted_UE), color = "red", size = 1) +
+  # Adjust x to move annotations further left
+  annotate("text", x = max(df_numeric$Plant_P) * 0.4, y = max(df_numeric$UE) * 0.9,
+           label = formula_text, size = 5, color = "black", hjust = 0) +
+  annotate("text", x = max(df_numeric$Plant_P) * 0.6, y = max(df_numeric$UE) * 0.8,
+           label = pseudoR2_text, size = 5, color = "black", hjust = 0) +
+  labs(title = "Exponential Model: UE vs Plant_P",
+       x = "Plant_P", y = "UE") +
+  theme_minimal()
+
+```
+
+<br> <br> <br>
 
 ### 7. Discussion. From your objectives.
 
