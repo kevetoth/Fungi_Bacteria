@@ -1,7 +1,7 @@
 ---
-title: ""
+title: "Cooperation between arbuscular mycorrhizal fungi and plant growth-promoting bacteria and their effects on plant growth and soil quality"
 authors Group A : "Keve Toth ; Jakov Cancar ; Camille Delabaere"
-date: "2024-12-01"
+date: "`r Sys.Date()`"
 output: 
   html_document
 ---
@@ -148,7 +148,7 @@ kable(anova_results, caption = "ANOVA Results with Bonferroni Correction")
 
 # <u>Showcasing all significant ANOVA analyses in boxplots</u>
 
-```{r, error=FALSE, warning=FALSE, include=FALSE}
+```{r, error=FALSE, echo=FALSE, warning=FALSE, fig.width=12, fig.height=12}
 # Load necessary libraries
 library(ggplot2)
 library(dplyr)
@@ -161,9 +161,6 @@ colnames(plant_soil)[1] <- "Group"
 # Reorder the factor levels of the "Group" column
 desired_order <- c("CK1", "B3", "A2", "AB5")
 plant_soil$Group <- factor(plant_soil$Group, levels = desired_order)
-
-# Specify the PDF file name
-pdf("Significant_ANOVA_mix.pdf", height = 12, width = 12)  # Adjust size to fit grid
 
 # Get the names of all response variables (excluding the grouping column)
 response_vars <- colnames(plant_soil)[2:ncol(plant_soil)]  # Adjust as needed
@@ -203,46 +200,11 @@ for (var in response_vars) {
   }
 }
 
-# Combine all the plots into a 4x4 grid (adjust the number of rows/columns as necessary)
+# Combine all the plots into a grid
 if (length(plot_list) > 0) {
   do.call(grid.arrange, c(plot_list, ncol = 4))  # Adjust ncol for layout
 }
-
-# Close the PDF device
-dev.off()
-
-print("Significant_ANOVA_mix.pdf")
-
-```
-
-```{r, error=FALSE, echo=FALSE}
-# Load libraries for this chunk
-library(pdftools)  # For rendering PDF pages
-library(magick)    # For image manipulation
-library(knitr)     # For including images in HTML
-
-# Dynamically locate the PDF file in the main folder
-pdf_file <- here("Significant_ANOVA_mix.pdf")
-
-# Verify the file exists
-if (!file.exists(pdf_file)) {
-  stop("File not found: ", pdf_file)
-}
-
-# Render the first page of the PDF to a raster
-page1_raster <- pdf_render_page(pdf_file, page = 1, dpi = 150)
-
-# Convert the raster to an image
-page1_image <- image_read(page1_raster)
-
-# Save the image to the output folder
-output_dir <- here("output")
-dir.create(output_dir, showWarnings = FALSE)  # Create 'output' folder if missing
-image_path <- file.path(output_dir, "page1_image.png")
-image_write(page1_image, path = image_path, format = "png")
-
-# Include the image in the document
-include_graphics(image_path)
+ 
 ```
 
 <br> <br>
@@ -673,9 +635,7 @@ perform_lda <- function(data, group_col, threshold = 0.1, plot_title_prefix = ""
 
 big_LDA <- perform_lda(plant_soil, "Group", threshold = 0.1, plot_title_prefix = "All variables measured")
 
-# Save the plots from the object `big_LDA`
-ggsave("Big_LDA_Plot.pdf", plot = big_LDA$lda_plot, width = 8, height = 6)
-ggsave("Big_LDA_Arrows.pdf", plot = big_LDA$arrow_plot, width = 8, height = 6)
+
 ```
 
 <br> <br> 
@@ -860,38 +820,9 @@ print(plot2)
 
 ```{r, error=FALSE, echo=FALSE, message=FALSE, warning=FALSE, fig.width=12, fig.height=24 }
 
-# First plot: Correlation between Root Length and Aboveground Biomass
-subset_data <- plant_soil[, c("RootLength", "Aboveground_Biomass", "Group")]
-model <- lm(Aboveground_Biomass ~ RootLength, data = subset_data)
-r_squared <- summary(model)$r.squared
-
+# Load required libraries
 library(ggplot2)
-p1 <- ggplot(subset_data, aes(x = RootLength, y = Aboveground_Biomass, color = Group)) +
-  geom_point(alpha = 0.6, size = 2) + 
-  geom_smooth(method = "lm", color = "red", se = FALSE) + 
-  annotate("text", x = min(subset_data$RootLength, na.rm = TRUE), 
-           y = max(subset_data$Aboveground_Biomass, na.rm = TRUE), 
-           label = paste("R² =", round(r_squared, 3)),
-           hjust = 0, vjust = 1, size = 5, color = "black") + 
-  labs(title = "Correlation between Root Length and Aboveground Biomass",
-       x = "Root Length", y = "Aboveground Biomass") + 
-  theme_minimal()
-
-# Second plot: Correlation between SRL and Aboveground Biomass
-subset_data <- plant_soil[, c("SRL", "Aboveground_Biomass", "Group")]
-model <- lm(Aboveground_Biomass ~ SRL, data = subset_data)
-r_squared <- summary(model)$r.squared
-
-p2 <- ggplot(subset_data, aes(x = SRL, y = Aboveground_Biomass, color = Group)) +
-  geom_point(alpha = 0.6, size = 2) + 
-  geom_smooth(method = "lm", color = "red", se = FALSE) + 
-  annotate("text", x = min(subset_data$SRL, na.rm = TRUE), 
-           y = max(subset_data$Aboveground_Biomass, na.rm = TRUE), 
-           label = paste("R² =", round(r_squared, 3)),
-           hjust = 0, vjust = 1, size = 5, color = "black") + 
-  labs(title = "Correlation between SRL and Aboveground Biomass",
-       x = "Specific Root Length (SRL)", y = "Aboveground Biomass") + 
-  theme_minimal()
+library(gridExtra)
 
 # Third plot: Correlation between Plant_P and SRL
 subset_data <- plant_soil[, c("Plant_P", "SRL", "Group")]
@@ -903,42 +834,10 @@ p3 <- ggplot(subset_data, aes(x = Plant_P, y = SRL, color = Group)) +
   geom_smooth(method = "lm", color = "red", se = FALSE) + 
   annotate("text", x = min(subset_data$Plant_P, na.rm = TRUE), 
            y = max(subset_data$SRL, na.rm = TRUE), 
-           label = paste("R² =", round(r_squared, 3)),
+           label = paste("R^2 =", round(r_squared, 3)),
            hjust = 0, vjust = 1, size = 5, color = "black") + 
   labs(title = "Correlation between Plant_P and SRL",
        x = "Plant P", y = "SRL") + 
-  theme_minimal()
-
-# Fourth plot: Correlation between Plant_P and Root Length
-subset_data <- plant_soil[, c("Plant_P", "RootLength", "Group")]
-model <- lm(Plant_P ~ RootLength, data = subset_data)
-r_squared <- summary(model)$r.squared
-
-p4 <- ggplot(subset_data, aes(x = RootLength, y = Plant_P, color = Group)) +
-  geom_point(alpha = 0.6, size = 2) + 
-  geom_smooth(method = "lm", color = "red", se = FALSE) + 
-  annotate("text", x = min(subset_data$RootLength, na.rm = TRUE), 
-           y = max(subset_data$Plant_P, na.rm = TRUE), 
-           label = paste("R² =", round(r_squared, 3)),
-           hjust = 0, vjust = 1, size = 5, color = "black") + 
-  labs(title = "Correlation between Plant_P and Root Length",
-       x = "Root Length", y = "Plant P") + 
-  theme_minimal()
-
-# Fifth plot: Correlation between Total Biomass and Plant P
-subset_data <- plant_soil[, c("Total_Biomass", "Plant_P", "Group")]
-model <- lm(Plant_P ~ Total_Biomass, data = subset_data)
-r_squared <- summary(model)$r.squared
-
-p5 <- ggplot(subset_data, aes(x = Total_Biomass, y = Plant_P, color = Group)) +
-  geom_point(alpha = 0.6, size = 2) + 
-  geom_smooth(method = "lm", color = "red", se = FALSE) + 
-  annotate("text", x = min(subset_data$Total_Biomass, na.rm = TRUE), 
-           y = max(subset_data$Plant_P, na.rm = TRUE), 
-           label = paste("R² =", round(r_squared, 3)),
-           hjust = 0, vjust = 1, size = 5, color = "black") + 
-  labs(title = "Correlation between Total Biomass and Plant P",
-       x = "Total Biomass", y = "Plant P") + 
   theme_minimal()
 
 # Sixth plot: Correlation between Total Biomass and Plant P (for Group A2 & AB5)
@@ -951,26 +850,10 @@ p6 <- ggplot(subset_data, aes(x = Total_Biomass, y = Plant_P, color = Group)) +
   geom_smooth(method = "lm", color = "red", se = FALSE) + 
   annotate("text", x = min(subset_data$Total_Biomass, na.rm = TRUE), 
            y = max(subset_data$Plant_P, na.rm = TRUE), 
-           label = paste("R² =", round(r_squared, 3)),
+           label = paste("R^2 =", round(r_squared, 3)),
            hjust = 0, vjust = 1, size = 5, color = "black") + 
   labs(title = "Correlation between Total Biomass and Plant P (A2 & AB5)",
        x = "Total Biomass", y = "Plant P") + 
-  theme_minimal()
-
-# Seventh plot: Correlation between Root Branches and Aboveground Biomass
-subset_data <- plant_soil[, c("Rootbranches", "Aboveground_Biomass", "Group")]
-model <- lm(Aboveground_Biomass ~ Rootbranches, data = subset_data)
-r_squared <- summary(model)$r.squared
-
-p7 <- ggplot(subset_data, aes(x = Rootbranches, y = Aboveground_Biomass, color = Group)) +
-  geom_point(alpha = 0.6, size = 2) + 
-  geom_smooth(method = "lm", color = "red", se = FALSE) + 
-  annotate("text", x = min(subset_data$Rootbranches, na.rm = TRUE), 
-           y = max(subset_data$Aboveground_Biomass, na.rm = TRUE), 
-           label = paste("R² =", round(r_squared, 3)),
-           hjust = 0, vjust = 1, size = 5, color = "black") + 
-  labs(title = "Correlation between Root Branches and Aboveground Biomass",
-       x = "Root Branches", y = "Aboveground Biomass") + 
   theme_minimal()
 
 # Eighth plot: Correlation between Root Branches and Plant P
@@ -983,15 +866,15 @@ p8 <- ggplot(subset_data, aes(x = Rootbranches, y = Plant_P, color = Group)) +
   geom_smooth(method = "lm", color = "red", se = FALSE) + 
   annotate("text", x = min(subset_data$Rootbranches, na.rm = TRUE), 
            y = max(subset_data$Plant_P, na.rm = TRUE), 
-           label = paste("R² =", round(r_squared, 3)),
+           label = paste("R^2 =", round(r_squared, 3)),
            hjust = 0, vjust = 1, size = 5, color = "black") + 
   labs(title = "Correlation between Root Branches and Plant P",
        x = "Root Branches", y = "Plant P") + 
   theme_minimal()
 
-# Arrange the 8 plots in 2 columns and 4 rows
-library(gridExtra)
-grid.arrange(p1, p2, p3, p4, p5, p6, p7, p8, ncol=2)
+# Arrange plots 3, 6, and 8 in a single column
+grid.arrange(p3, p6, p8, ncol = 1)
+
 
 ```
 
