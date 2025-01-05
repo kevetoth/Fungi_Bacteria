@@ -30,7 +30,7 @@ You have a nice article to follow but data are a bit scarce. The dataframe have 
 
 ## Protocol
 
-The final result is showcased in the Preliminary_Test.Rmd file it should run separately on its own. If no all the graphs can be seen following the protocol
+The final result is showcased in the Final_Results.Rmd file it should run separately on its own. If no all the graphs can be seen following the protocol
 
 1. To set up the workspace run R file 00_GetData.
 2. To get boxplots showcasing the Analyisis of Variance (ANOVA) analyisis of all variables run 02_ANOVAs

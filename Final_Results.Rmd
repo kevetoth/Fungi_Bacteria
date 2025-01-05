@@ -2,33 +2,14 @@
 title: "Cooperation between arbuscular mycorrhizal fungi and plant growth-promoting bacteria and their effects on plant growth and soil quality"
 authors Group A : "Keve Toth ; Jakov Cancar ; Camille Delabaere"
 date: "`r Sys.Date()`"
-output: 
-  html_document
+output:
+  html_document:
+    code_folding: hide                  # Fold the code
+    self_contained: TRUE
+    
 ---
-<style>
-/* Add space between sections */
-.section {
-  margin-bottom: 50px; /* Add spacing between sections */
-}
 
-/* Style for individual images (PDF embeds) */
-img {
-  display: block;        /* Ensure images stack vertically */
-  margin: 20px auto;     /* Center-align and add spacing */
-  max-width: 100%;       /* Make it responsive */
-  width: 1200px;         /* Fixed large width for better readability */
-  height: auto;          /* Maintain aspect ratio */
-}
-
-/* Center all headings */
-h1, h2, h3 {
-  text-align: center;
-}
-</style>
-
-<div class="section">
-
-## Preliminary results of [Cooperation between arbuscular mycorrhizal fungi and plant growth-promoting bacteria and their effects on plant growth and soil quality](https://peerj.com/articles/13080/)
+ [Cooperation between arbuscular mycorrhizal fungi and plant growth-promoting bacteria and their effects on plant growth and soil quality](https://peerj.com/articles/13080/)
 
 ## Preamble :
 
@@ -112,7 +93,7 @@ We plan to start with each variable analyses separately then ANOVA analyses we'l
 
 # <u>P values for each variable obtained by ANOVA analyisis, as well as Bonferroni corrected P values</u>
 
-```{r,error=FALSE, echo=FALSE}
+```{r,error=FALSE, warning=FALSE, message=FALSE, echo=FALSE}
 library(DT)
 
 # Filter numeric variables for ANOVA
@@ -148,7 +129,11 @@ kable(anova_results, caption = "ANOVA Results with Bonferroni Correction")
 
 # <u>Showcasing all significant ANOVA analyses in boxplots</u>
 
-```{r, error=FALSE, echo=FALSE, warning=FALSE, fig.width=12, fig.height=12}
+Here we compiled all boxplots based on our anova analysis. CK1 = Control, A2 = AMF treatment  B3 = PGPB, and AB5 = Both PGPB and AMF treatments together. 
+
+It is interesting to note that not all variables measured showcased a significant difference between treatment groups so these we did not make box plots of. During our analysis we noticed that AMF treatment and AMF + PGPB treatments usually showed similar results in variation and they always differed from the control and only PGPB treatments which also usually clustered together. This means that AMF treatment had a much greater impact on plant and soil variables measured than than PGPB treatment. And mos of the variation and results of the two treatment together can be explained by only the AMF treatment. 
+
+```{r, error=FALSE, echo=FALSE, warning=FALSE, message=FALSE, fig.width=12, fig.height=12}
 # Load necessary libraries
 library(ggplot2)
 library(dplyr)
@@ -211,6 +196,11 @@ if (length(plot_list) > 0) {
 
 # <u>Showcasing all ANOVA analysis with significant difference between AMF treatment and AMF + PGPB treatments</u>
 
+To further analyse weather the PGPB had any synergistic effects with AMF we created ANOVA analysis box plots that showcase only AMF and PGPB + AMF treatments only if there is a significant difference between the two treatments not considering other treatments. 
+
+We can see that there is a synergistic effect because the treatment AMF + PGPB resulted in a significantly larger biomass, it also resulted in a significantly larger plant phosphorus content. Which is even more interesting since this means that the PGPB increased the Phosphorus uptake of AMF since normally AMF is attributed with the capability of up taking the non mobile nutrient. 
+
+We can also see that there is some significant difference between treatments in the soil parameters which is interesting since it might let us understand that with the PGPB present AMF have a different chemical metabolism an secrete different metabolites into the soil. Which shows that there is a clear interaction between PGPB and AMF. 
 ```{r, error=FALSE, echo=FALSE, fig.width=12, fig.height=12}
 
 library(gridExtra)
@@ -277,8 +267,20 @@ do.call(grid.arrange, c(plots, ncol = 2))
 *Details - NO3-N : Nitrate , UE : Soil urease enzyme , EC : Electrical conductivity , Plant P : Plant phosphorus* 
 <br> <br>
 
-# <u>Principle Component Analysis (PCA) of plants measured variables and soil measurable separately</u>
+# <u>Principle Component Analysis (PCA) of plants measured variables and soil measured variables separately</u>
 
+For the principle components analyisis we decide to separate the measured variables, as there was too many to result in a PCA that is informative at all. So we decide to separate the variables into two groups one group being the 
+Plant Parameters which contained: Aboveground_Biomass, Belowground_Biomass, Total_Biomass, RootLength, RootSurfaceArea, RootAverageDiameter, Rvolume, Rootbranches, SIZE, R/S_ratio, HEIGHT, Plant_P, Plant_N, Plant_C, Specific Root Length.
+
+And soil parameters containing: NH4+-N, NO3-N, Total_N, Total_C, Available_P, Total_P, ALP, UE, EC, PH.
+
+We then conducted a principle components analysis on both groups of variables separately. 
+
+For the plant parameters PC1 is pretty good at separating the treatment groups as it accounts for 73.2% of variation. Resulting in clear groupings in the PCA plot. Meaning that there are multiple variables in Plant parameters with very large variations that correspond with groups as well. The most important variables for PC1 are Below ground biomass, Root branches, Plant P, and Stem diameter. Plant phosphorus content is not surprising at all since it probably helps differentiate between the AMF and the PGPB + AMF treatment groups. 
+
+For the soil parameters PC1 only explains 42.9% of variance however PC2 explains 27.1% of variance so together explaining 70% of variance. The most important components of PC1 and PC2 of the soil parameters were Soil Urease concentration, soil NO3-N, and EC. All of these point the fact that the metabolism of the plants with and without AMF and PGPB wildly differed. This means that there are not very large variation between Soil paramter variables. 
+
+However we could differentiate between treatment groups much better based on plant parameters compared to soil parameters, this is probably because only a few soil parameters had a large variation. Whereas there was a big variation in multiple plant parameters making it easier to differentiate between treatment groups. 
 ```{r, error=FALSE, include=FALSE}
 # 07_Subsetting soil-plant parameters.R
 # Subset 1: Plant parameters (including 'Group' as the treatment column)
@@ -469,12 +471,13 @@ grid.arrange(
 
 ```
 
-<br>
-<br>
+<br> <br>
 
 
 
-# <u>Comparing PC1 of the Plant parameter analysis to PC1 of the Soil Parameter Analyisis<u>
+# <u>Comparing PC1 of the Plant parameter analysis to PC1 of the Soil Parameter Analyisis</u>
+
+We then decided to compare PC1 of the Plant parameters and PC1 of the Soil parameters on a scatter plot. Here we can clearly see that the treatment groups are much more clearly separated based on PC1 of plant parameters than based on PC1 of soil parameters. This is probably due because PC1 of Plant parameters much more clearly groups the treatments just on its own it accounts for 73.2% of variance, while PC1 of the Soil Parameters only explains 42.9%. So we can see that the treatments have a much more noticable impact on plant parameters.
 
 ```{r, error=FALSE, echo=FALSE}
 # Combine PCA data for plotting
@@ -504,13 +507,19 @@ print(pca_scatter)
 ```
 
 
+<br> <br> 
 
-```{r, echo=FALSE, error=FALSE}
-# Load necessary libraries
-library(MASS)
-library(ggplot2)
+# <u>Linear Discriminant Analysis of all parameters</u>
 
-# Define the LDA function with the update
+We decide to do a Linear discriminant analysis on our measured variables in order to visualize and understand which variables separate the groups the most. So we could use this to see which variables had the most group specific variation, and from this we can see which variables had the strongest correlation with treatments. 
+
+First we decided to do an LDA with all of the variables included. Based on this R could produce an equation that very clearly separated the treatment groups. So we summarized that there were multiple parameters that showed a large correlation with groups. We will talk about these parameters in the separated LDA section because there it is clearer. However from this LDA with all the variables it is clear that there were variables were very differentiating according to treatments. 
+
+It is worth mentioning that the LDA with all the variables produced a very similar plot compared to the LDA with only the Plant parameters. From this we can summarize that the parameters that were the best at differentiating between groups are in the plant parameters subgroup. 
+
+We also included the equations generated by R, to better showcase and explain which variables separated the treatment groups best. 
+
+```{r, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
 perform_lda <- function(data, group_col, threshold = 0.1, plot_title_prefix = "") {
   # Standardize the data
   data_std <- data
@@ -520,6 +529,25 @@ perform_lda <- function(data, group_col, threshold = 0.1, plot_title_prefix = ""
   
   # Perform LDA
   lda_model <- lda(as.formula(paste(group_col, "~ .")), data = data_std)
+  
+  # Extract the LDA equations
+  coefficients <- coef(lda_model)
+  ld1_equation <- paste(
+    "LD1 =",
+    paste0(
+      round(coefficients[, 1], 3), 
+      "*", rownames(coefficients),
+      collapse = " + "
+    )
+  )
+  ld2_equation <- paste(
+    "LD2 =",
+    paste0(
+      round(coefficients[, 2], 3), 
+      "*", rownames(coefficients),
+      collapse = " + "
+    )
+  )
   
   # Predictions and LDA scores
   predictions <- predict(lda_model)
@@ -533,10 +561,14 @@ perform_lda <- function(data, group_col, threshold = 0.1, plot_title_prefix = ""
     labs(title = paste(plot_title_prefix, "LDA Plot"), x = "LD1", y = "LD2") +
     theme_minimal() +
     theme(legend.title = element_blank())
-  print(lda_plot)  # Print LDA plot to the R graphics device
   
-  # Extract and filter variable importance
-  coefficients <- lda_model$scaling
+  print(lda_plot)  # Print the LDA plot
+  
+  # Print the equations below the plot
+  cat("\nEquation for LD1:\n", ld1_equation, "\n\n")
+  cat("Equation for LD2:\n", ld2_equation, "\n\n")
+  
+  # Variable importance
   coefficients_df <- data.frame(
     Variable = rownames(coefficients),
     LD1 = coefficients[, 1],
@@ -544,94 +576,28 @@ perform_lda <- function(data, group_col, threshold = 0.1, plot_title_prefix = ""
     Importance = rowSums(abs(coefficients))
   )
   
-  # Exclude LD1 and LD2 from the arrow plot
-  coefficients_filtered <- subset(coefficients_df, Variable != "LD1" & Variable != "LD2" & Importance > threshold)
+  # Filter for arrows
+  coefficients_filtered <- subset(coefficients_df, Importance > threshold)
   
-  # Plot variable importance arrows
+  # Arrow plot
   arrow_plot <- ggplot(coefficients_filtered, aes(x = 0, y = 0)) +
-    geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +  # Zero line for LD2
-    geom_vline(xintercept = 0, linetype = "dashed", color = "gray") +  # Zero line for LD1
+    geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +
+    geom_vline(xintercept = 0, linetype = "dashed", color = "gray") +
     geom_segment(aes(xend = LD1, yend = LD2), 
                  arrow = arrow(type = "closed", length = unit(0.1, "inches")), 
-                 linewidth = 1) +  # Arrows for variables
+                 linewidth = 1) +
     geom_text(aes(x = LD1, y = LD2, label = Variable), color = "red", size = 3, hjust = 1.5, vjust = 1.5) +
     labs(title = paste(plot_title_prefix, "LDA contribution of variables"), x = "LD1", y = "LD2") +
     theme_minimal() +
     theme(axis.text = element_text(color = "black"), 
           axis.title = element_text(size = 12),       
           axis.ticks = element_line(color = "black"))
+  
   print(arrow_plot)  # Print arrow plot to the R graphics device
   
   return(list(lda_model = lda_model, predictions = predictions, lda_plot = lda_plot, arrow_plot = arrow_plot))
 }
 
-
-```
-<br>
-<br>
-
-
-
-# <u>LDA Analyisis including all variables <u>
-```{r, echo=FALSE, error=FALSE}
-# Load necessary libraries
-library(MASS)
-library(ggplot2)
-
-# Define the LDA function with the update
-perform_lda <- function(data, group_col, threshold = 0.1, plot_title_prefix = "") {
-  # Standardize the data
-  data_std <- data
-  predictors <- setdiff(names(data), group_col)
-  data_std[, predictors] <- scale(data[, predictors])
-  data_std[[group_col]] <- as.factor(data_std[[group_col]])
-  
-  # Perform LDA
-  lda_model <- lda(as.formula(paste(group_col, "~ .")), data = data_std)
-  
-  # Predictions and LDA scores
-  predictions <- predict(lda_model)
-  data_std$LD1 <- predictions$x[, 1]
-  data_std$LD2 <- predictions$x[, 2]
-  
-  # Plot LDA results
-  lda_plot <- ggplot(data_std, aes(x = LD1, y = LD2, color = !!sym(group_col), fill = !!sym(group_col))) +
-    geom_point(size = 3) +
-    stat_ellipse(geom = "polygon", alpha = 0.3) +
-    labs(title = paste(plot_title_prefix, "LDA Plot"), x = "LD1", y = "LD2") +
-    theme_minimal() +
-    theme(legend.title = element_blank())
-  print(lda_plot)  # Print LDA plot to the R graphics device
-  
-  # Extract and filter variable importance
-  coefficients <- lda_model$scaling
-  coefficients_df <- data.frame(
-    Variable = rownames(coefficients),
-    LD1 = coefficients[, 1],
-    LD2 = coefficients[, 2],
-    Importance = rowSums(abs(coefficients))
-  )
-  
-  # Exclude LD1 and LD2 from the arrow plot
-  coefficients_filtered <- subset(coefficients_df, Variable != "LD1" & Variable != "LD2" & Importance > threshold)
-  
-  # Plot variable importance arrows
-  arrow_plot <- ggplot(coefficients_filtered, aes(x = 0, y = 0)) +
-    geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +  # Zero line for LD2
-    geom_vline(xintercept = 0, linetype = "dashed", color = "gray") +  # Zero line for LD1
-    geom_segment(aes(xend = LD1, yend = LD2), 
-                 arrow = arrow(type = "closed", length = unit(0.1, "inches")), 
-                 linewidth = 1) +  # Arrows for variables
-    geom_text(aes(x = LD1, y = LD2, label = Variable), color = "red", size = 3, hjust = 1.5, vjust = 1.5) +
-    labs(title = paste(plot_title_prefix, "LDA contribution of variables"), x = "LD1", y = "LD2") +
-    theme_minimal() +
-    theme(axis.text = element_text(color = "black"), 
-          axis.title = element_text(size = 12),       
-          axis.ticks = element_line(color = "black"))
-  print(arrow_plot)  # Print arrow plot to the R graphics device
-  
-  return(list(lda_model = lda_model, predictions = predictions, lda_plot = lda_plot, arrow_plot = arrow_plot))
-}
 
 big_LDA <- perform_lda(plant_soil, "Group", threshold = 0.1, plot_title_prefix = "All variables measured")
 
@@ -642,13 +608,20 @@ big_LDA <- perform_lda(plant_soil, "Group", threshold = 0.1, plot_title_prefix =
 
 # <u>Linear Discriminant Analysis of Plant Parameters and Soil Parameters separately</u>
 
-```{r, error=FALSE, echo=FALSE}
+We then decided to conduct LDA with the variable groupings that we used for the PCA analysis. As seen in the PCA of Plant parameters were much better at separating between groups than soil parameters. 
 
-# Load necessary libraries
-library(MASS)
-library(ggplot2)
+We can see that it is easy to separate the treatment groups based on plant parameters, but it is not a very clear separation based on soil parameters. Which means that plant parameters were more noticably different after treatments than soil parameters. 
 
-# Define the LDA function with the update
+For the plant parameters according to the equation for the LDA plot the most important variables for LD1 were: Aboveground_Biomass, Belowground_Biomass, Total_Biomass.
+And for LD2 were: Aboveground_Biomass, Belowground_Biomass, Total_Biomass, RootLength, RootSurfaceArea.
+These variables are all clearly correlated with each other as well so the most important factor differentiating between tretments is the size of the plants. 
+
+
+For the soil parameters according to the equation for the LDA plot the most important variable for LD1 were: Total_P, PH, EC, UE. 
+And for LD2 were: EC, PH and Total_N. 
+As the groupings are not as clear here, as in the LDA for plant parameters we can not really draw a lot of conclusions from this analysis. However some similar variables appear to be important in the LDA analysis as the PCA. Like Plant_P, soil Urease, and EC. Which means that these variables, are not only highly varied between each measurement as well as they are great at separating groups, so the variation is highly correlated with treatments.  
+```{r, error=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+
 perform_lda <- function(data, group_col, threshold = 0.1, plot_title_prefix = "") {
   # Standardize the data
   data_std <- data
@@ -658,6 +631,25 @@ perform_lda <- function(data, group_col, threshold = 0.1, plot_title_prefix = ""
   
   # Perform LDA
   lda_model <- lda(as.formula(paste(group_col, "~ .")), data = data_std)
+  
+  # Extract the LDA equations
+  coefficients <- coef(lda_model)
+  ld1_equation <- paste(
+    "LD1 =",
+    paste0(
+      round(coefficients[, 1], 3), 
+      "*", rownames(coefficients),
+      collapse = " + "
+    )
+  )
+  ld2_equation <- paste(
+    "LD2 =",
+    paste0(
+      round(coefficients[, 2], 3), 
+      "*", rownames(coefficients),
+      collapse = " + "
+    )
+  )
   
   # Predictions and LDA scores
   predictions <- predict(lda_model)
@@ -671,10 +663,14 @@ perform_lda <- function(data, group_col, threshold = 0.1, plot_title_prefix = ""
     labs(title = paste(plot_title_prefix, "LDA Plot"), x = "LD1", y = "LD2") +
     theme_minimal() +
     theme(legend.title = element_blank())
-  print(lda_plot)  # Print LDA plot to the R graphics device
   
-  # Extract and filter variable importance
-  coefficients <- lda_model$scaling
+  print(lda_plot)  # Print the LDA plot
+  
+  # Print the equations below the plot
+  cat("\nEquation for LD1:\n", ld1_equation, "\n\n")
+  cat("Equation for LD2:\n", ld2_equation, "\n\n")
+  
+  # Variable importance
   coefficients_df <- data.frame(
     Variable = rownames(coefficients),
     LD1 = coefficients[, 1],
@@ -682,35 +678,34 @@ perform_lda <- function(data, group_col, threshold = 0.1, plot_title_prefix = ""
     Importance = rowSums(abs(coefficients))
   )
   
-  # Exclude LD1 and LD2 from the arrow plot
-  coefficients_filtered <- subset(coefficients_df, Variable != "LD1" & Variable != "LD2" & Importance > threshold)
+  # Filter for arrows
+  coefficients_filtered <- subset(coefficients_df, Importance > threshold)
   
-  # Plot variable importance arrows
+  # Arrow plot
   arrow_plot <- ggplot(coefficients_filtered, aes(x = 0, y = 0)) +
-    geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +  # Zero line for LD2
-    geom_vline(xintercept = 0, linetype = "dashed", color = "gray") +  # Zero line for LD1
+    geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +
+    geom_vline(xintercept = 0, linetype = "dashed", color = "gray") +
     geom_segment(aes(xend = LD1, yend = LD2), 
                  arrow = arrow(type = "closed", length = unit(0.1, "inches")), 
-                 linewidth = 1) +  # Arrows for variables
+                 linewidth = 1) +
     geom_text(aes(x = LD1, y = LD2, label = Variable), color = "red", size = 3, hjust = 1.5, vjust = 1.5) +
     labs(title = paste(plot_title_prefix, "LDA contribution of variables"), x = "LD1", y = "LD2") +
     theme_minimal() +
     theme(axis.text = element_text(color = "black"), 
           axis.title = element_text(size = 12),       
           axis.ticks = element_line(color = "black"))
+  
   print(arrow_plot)  # Print arrow plot to the R graphics device
   
   return(list(lda_model = lda_model, predictions = predictions, lda_plot = lda_plot, arrow_plot = arrow_plot))
 }
+
+
 # Perform LDA for Plant Parameters
 plant_lda_results <- perform_lda(Plant_param, "Group", threshold = 0.1, plot_title_prefix = "Plant Parameters")
-ggsave("Plant_LDA_Plot.pdf", plot = plant_lda_results$lda_plot, width = 8, height = 6)
-ggsave("Plant_LDA_Arrows.pdf", plot = plant_lda_results$arrow_plot, width = 8, height = 6)
 
 # Perform LDA for Soil Parameters
 soil_lda_results <- perform_lda(Soil_param, "Group", threshold = 0.1, plot_title_prefix = "Soil Parameters")
-ggsave("Soil_LDA_Plot.pdf", plot = soil_lda_results$lda_plot, width = 8, height = 6)
-ggsave("Soil_LDA_Arrows.pdf", plot = soil_lda_results$arrow_plot, width = 8, height = 6)
 
 
 ```
@@ -719,7 +714,8 @@ ggsave("Soil_LDA_Arrows.pdf", plot = soil_lda_results$arrow_plot, width = 8, hei
 
 # <u>Correlogram of all variables</u>
 
-```{r, error=FALSE, echo=FALSE}
+We thought it would be a good idea to showcase the correlations between all variables in a correlogram. In this format it is easy to see that some variables share some correlation if we don't consider groups as well. We then took the strongest correlations and some of the interesting ones and plotted them as linerar regressions below. 
+```{r, error=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
 # Load necessary libraries
 if (!require(ggplot2)) install.packages("ggplot2")
 library(ggplot2)
@@ -754,8 +750,11 @@ print(correlogram)
 
 # <u>Correlogramms showing the correlation Specific Root Length (SRL) has with plant and soil parameters separately</u>
 
-```{r, error=FALSE, warning=FALSE, echo=FALSE}
+The original authors of the paper thought it would be important to showcase specific root length (SRL) correlation with other variables, as they thought that the synergy of AMF and PGPB affected SRL the most compared to other treatments, and that SRL explains the Plant Phosphorus, and Plant biomass differences, as they thought that an increase in SRL would improve plant nutrient uptake. We thought these correlograms would be a better visualization of these correlations. 
+There is in fact a strong positive correlation between SRL and Plant P, but surprisingly there is a strong negative correlation between Belowground biomass and SRL. A somewhat not surprising result is that SRL is not strongly correlated with any of the soil parameters. Except for Urease with which it is surprisingly correlated but not in a linear way, we showcase this nonlinear correlation below. 
+```{r, error=FALSE, warning=FALSE, echo=FALSE, message=FALSE}
 # Load required libraries
+
 if (!require(ggplot2)) install.packages("ggplot2")
 if (!require(reshape2)) install.packages("reshape2")
 library(ggplot2)
@@ -818,6 +817,7 @@ print(plot2)
 
 # <u>Some notable correlations</u> 
 
+We thougt it would be important to show these correlations on graphs as well. They are not strong however they could be considered for further analysis and study, as the study of the original paper doesn't have a high sample number these correlations could be strengthened or dismissed with a study containing more samples. 
 ```{r, error=FALSE, echo=FALSE, message=FALSE, warning=FALSE, fig.width=12, fig.height=24 }
 
 # Load required libraries
@@ -879,9 +879,11 @@ grid.arrange(p3, p6, p8, ncol = 1)
 ```
 
 
-<br> <br> <br>
+<br> <br> 
 
-# <u>Urease and Plant Phosphorus non-linear relation<u>
+# <u>Urease and Plant Phosphorus non-linear relation</u>
+
+Looking at the dot plot of this correlation we realized that these variables are very strongly correlated in a negative non linear manner, so we used r to fit an exponential model on the dot plot. This correlation definitely requires further investigation as it is quite clear and very strong. However it is also unexpected as Urease is an enzyme that is used in plant-nitrogen interactions and it is correlated with plant phosphorus. We would like to mention that this correlation could be because Urease activity is inhibited by phosphate. But this is just guessing and this correlation requires further investigation. 
 ```{r, error=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
 # Load required libraries
 library(ggplot2)
@@ -928,9 +930,9 @@ ggplot(df_numeric, aes(x = Plant_P, y = UE)) +
 
 ```
 
-<br> <br> <br>
+<br> <br> 
 
-### 7. Discussion. 
+## 7. Discussion. 
 
 The primary objective of this project was to analyze the potential synergy between arbuscular mycorrhizal fungi (AMF) and plant growth-promoting rhizobacteria (PGPR) on nutrient uptake, plant growth, and soil quality, as described in the chosen article "Cooperation between arbuscular mycorrhizal fungi and plant growth-promoting bacteria and their effects on plant growth and soil quality." We approached this hypothesis through a series of statistical and multivariate analyses, including ANOVA, PCA (Principal Component Analysis), LDA (Linear Discriminant Analysis), and correlation analyses.
 
