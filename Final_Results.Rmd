@@ -934,33 +934,40 @@ ggplot(df_numeric, aes(x = Plant_P, y = UE)) +
 
 ## 7. Discussion. 
 
-The primary objective of this project was to analyze the potential synergy between arbuscular mycorrhizal fungi (AMF) and plant growth-promoting rhizobacteria (PGPR) on nutrient uptake, plant growth, and soil quality, as described in the chosen article "Cooperation between arbuscular mycorrhizal fungi and plant growth-promoting bacteria and their effects on plant growth and soil quality." We approached this hypothesis through a series of statistical and multivariate analyses, including ANOVA, PCA (Principal Component Analysis), LDA (Linear Discriminant Analysis), and correlation analyses.
+Our ANOVA results demonstrate that AMF had a stronger and more consistent impact on plant
+growth and soil properties compared to PGPB alone. AMF treatments significantly improved total
+biomass, nitrate availability, and phosphorus uptake, highlighting their ability to enhance plant
+nutrient and water absorption. The combined AMF + PGPB treatment showed some additional
+benefits, such as increased urease activity and electrical conductivity, but these improvements were
+not consistent, suggesting that AMF drives most of the observed effects.
 
-1. ANOVA Analysis and Boxplots
+The PCA analysis revealed that plant parameters are much better at separating treatment groups
+than soil parameters. Plant PC1 explained 73.2% of the variance, with key contributors being traits
+like biomass and root length. This shows that treatments had a strong impact on plant traits, making
+them more responsive indicators of treatment effects. Soil PC1, explaining 42.9% of the variance, was
+less effective at differentiating groups, as soil parameters showed slight variations across treatments.
 
-We started by analyzing individual variables using ANOVA to determine where significant variations occurred among treatments (AMF, PGPR, and their combination).
+The LDA analysis supported these findings, with plant parameters providing clearer separation
+between groups, driven by variables like total biomass and root surface area. In contrast, soil
+parameters showed less distinct group separation, with variables like pH and urease activity
+contributing the most. Morevoer, some variables, such as soil urease and EC, were consistently
+important in both PCA and LDA, indicating their strong correlation with treatments.
 
-The ANOVA results revealed significant differences in certain plant and soil traits when comparing treatments. Boxplots helped visualize where these variations occurred, particularly for treatments involving both AMF and PGPR, suggesting potential synergy.
+The correlogram of all variables revealed important relationships between plant and soil parameters,
+helping to identify key drivers of treatment effects. Strong positive correlations were observed
+between biomass traits and soil parameters like nitrate and electrical conductivity, indicating that
+better soil conditions directly promote plant growth. Interestingly, root traits such as the root-to-
+shoot ratio (R/S) showed weaker or negative correlations with biomass, reflecting trade-offs in plant
+resource allocation. Specific Root Length (SRL) also emerged as an important plant trait, showing a
+strong positive correlation with Plant P, emphasizing its role in improving nutrient uptake efficiency.
 
-Bonferroni corrections were applied to ensure statistical robustness, which confirmed that some results remained significant after controlling for multiple comparisons.
-
-2. Multivariate Analyses (PCA and LDA)
-
-To explore relationships across multiple variables simultaneously, we employed Principal Component Analysis (PCA):
-
-PCA on plant parameters and soil parameters separately allowed us to identify how each variable contributed to PC1 and PC2. Scatterplots and arrow plots revealed strong groupings and variable influences.
-
-A combined PCA analysis comparing PC1 of plant traits and PC1 of soil traits showed a meaningful relationship between soil quality and plant performance, supporting our hypothesis of a functional connection.
-
-We further used Linear Discriminant Analysis (LDA) to assess how well the measured variables discriminated between treatments:
-
-LDA scatterplots demonstrated clear group separations, with arrow plots highlighting the contribution strength of key variables to LD1 and LD2. These findings emphasized specific traits (e.g., root parameters, phosphorus content, and urease activity) as drivers of treatment differences.
-
-3. Correlation Analyses
-
-To explore interdependencies between traits, we conducted correlograms for plant characteristics and soil parameters, specific Root Length (SRL) correlations with plant and soil variables.
-
-These analyses revealed strong correlations, particularly highlighting SRL’s role as a key trait influencing both plant growth and soil quality. Additionally, nonlinear correlations, such as between urease activity (UE) and plant phosphorus, were identified, showcasing complex relationships that might not have been captured in linear models.
+The specific root length (SRL) correlograms highlighted SRL’s importance further. SRL was positively
+correlated with Plant P, confirming its role in enhancing phosphorus uptake, but it showed a negative
+correlation with belowground biomass, meaning that plants with higher SRL might use less energy to
+grow bigger roots. Additionally, this correlogram revealed a nonlinear exponential relationship
+between urease activity and Plant P. As phosphorus levels increased, urease activity decreased,
+which might suggest an inhibitory effect of phosphate on urease. This unexpected link between
+nitrogen and phosphorus shows how nutrient cycling can be more complex due to the treatments.
 
 ### 8. Conclusions.
 
