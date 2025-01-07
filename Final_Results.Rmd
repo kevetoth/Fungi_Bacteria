@@ -971,14 +971,7 @@ nitrogen and phosphorus shows how nutrient cycling can be more complex due to th
 
 ### 8. Conclusions.
 
-Through statistical and multivariate analyses, this project supported the hypothesis that the combined application of AMF and PGPR enhances plant growth and soil quality more effectively than individual treatments:
-
-Significant variations observed in plant traits and soil parameters confirmed that AMF and PGPR, when applied together, exhibit synergistic effects.
-
-PCA and LDA analyses highlighted relationships between plant performance and soil quality, identifying key drivers such as phosphorus uptake, urease activity, and specific root length (SRL).
-
-Correlations between variables, including nonlinear trends, underscored the complexity of interactions in plant-soil systems and focus attention on the need for multivariate approaches to understand these dynamics fully.
-
+In this data analysis project we evaluated the effects of Arbuscular Mycorrizhal Fungi AMF and Plant Growth Promoting Rhizobacteria PGPB on root morphology, plant growth, and soil properties. Our data analysis confirms the findings of the original research. Similar to their results, we observed that AMF treatments had the strongest impact, improving biomass, phosphorus uptake, and soil properties. The combined treatment of AMF and PGPB provided additional benefits, such as enhanced enzyme activity like Urease Activity (UE) and Alkaline Phosphatase (ALP). Specific Root Length (SRL) was identified as a key trait for nutrient uptake, although it was linked to reduced root mass. The correlation between urease activity and phosphorus highlighted complex nutrient interactions influenced by the treatments. These findings confirmed the conclusion of the original study that dual inoculation of AMF and PGPB is the most effective strategy for improving plant growth, nutrient acquisition and soil quality. Important to add is that if the goal is to only increase plant total biomass, using only AMF can be more cost-effective option as it provides similar results to the combined treatment of AMF and PGPB. Overall, this approach offers potential as a bio-fertilizer to promote sustainable forage production and soil health, particularly in regions like the Qinghai-Tibet Plateau.
 .........................................
 
 
