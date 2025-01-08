@@ -41,7 +41,7 @@ The <u>hypotheses</u> are 1) AMF and PGPR could mutually symbiose and enhance th
 
 It comes from the scientific article [Cooperation between arbuscular mycorrhizal fungi and plant growth-promoting bacteria and their effects on plant growth and soil quality](https://peerj.com/articles/13080/) by Yu L, Zhang H, Zhang W, Liu K, Liu M, Shao X. 2022.
 
-```{r,error=FALSE, warning=FALSE, message=FALSE, echo=TRUE}
+```{r,error=FALSE, warning=FALSE, message=FALSE, echo=FALSE}
 
 # Load necessary libraries
 if (!require(readxl)) install.packages("readxl")
@@ -95,16 +95,9 @@ if ("RootLength" %in% colnames(plant_soil) && "Belowground_Biomass" %in% colname
   plant_soil <- plant_soil %>%
     mutate(SRL = (`RootLength`/100) / `Belowground_Biomass`)
   
-# View the updated dataframe
-  print(head(plant_soil))
-  
-# Summary of SRL
-  print(summary(plant_soil$SRL))
   
 } 
 
-# Print a sample data object to confirm
-print(plant_soil)
 ```
 
 ```{r display_tbl_kable, echo=TRUE}
